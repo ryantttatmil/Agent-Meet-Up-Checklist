@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -95,7 +94,7 @@
     white-space: nowrap;
   }
 
-  /* Header / Title */
+  /* ===== Header / Title (ICON + TEXT centered as a unit) ===== */
   .title-box {
     background: linear-gradient(135deg, #ffe9f0, #e8f0fe);
     border: 1px solid #d7deed;
@@ -103,35 +102,66 @@
     padding: 18px 20px;
     margin-bottom: 22px;
 
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 14px;
-    align-items: start;
+    /* Stack group + subtitle, and center */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
   }
 
-  /* BIGGER lens, LEFT handle, moved UP slightly, nudged RIGHT slightly */
+  /* Group icon + title text so they always stick together */
+  .title-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
   .title-icon {
     width: 68px;
     height: 68px;
     display: inline-block;
-    margin-top: -2px;   /* move whole graphic up a bit */
-    margin-left: 256px;   /* ← nudge to the right a bit */
+    margin: 0;
+    margin-top: 12px;              /* slight baseline alignment tweak */
+    flex: 0 0 auto;
   }
   .title-icon svg { display: block; width: 68px; height: 68px; }
 
-  .title-text { align-self: start; }
-  .title-text h1 {
-    margin: 0 0 4px 0;
+  .main-title {
+    margin: 0;
     font-size: 24px;
     font-weight: 900;
     line-height: 1.2;
+    white-space: normal;
+    word-break: keep-all;          /* better for CJK */
   }
-  .title-text p { margin: 0; color: var(--muted); font-size: 14px; }
 
-  /* Grid: 3 x 2 */
+  .subtitle-title {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  
+  /* Option C: bring icon + title closer */
+  .title-group {
+  gap: 4px;   /* tighter spacing */
+  }
+
+  /* >>> Option A: nudge the title text up to align with icon */
+  .title-group .main-title {
+    transform: translateY(-2px);
+  }
+  @media (max-width: 480px) {
+    .title-group .main-title {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Grid: default desktop = 3 columns */
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
   /* Card */
   .card {
@@ -151,7 +181,8 @@
   .check { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
   .icon {
     grid-area: icon; width: 68px; height: 68px;
-    border: 1px solid var(--border); border-radius: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
     display: grid; place-items: center; overflow: hidden; background: #fafbff;
   }
   .emoji { font-size: 36px; line-height: 1; }
@@ -175,6 +206,64 @@
   .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 
   @media print { .actions, .note { display: none !important; } body { background: #fff; padding: 0; } }
+
+  /* ===== Mobile & Tablet responsive rules per your spec ===== */
+
+  /* MOBILE PORTRAIT → 1 per row (6 rows total for 6 cards) */
+  @media (max-width: 480px) and (orientation: portrait) {
+    body { padding: 16px 12px 28px; }
+
+    .export-frame {
+      padding: 16px;
+      border-radius: 10px;
+    }
+
+    .info-bar {
+      grid-template-columns: 1fr;
+      row-gap: 8px;
+    }
+    .date-field { justify-self: start; }
+    .name-field { gap: 6px; }
+    .name-input { max-width: 100%; width: 100%; }
+
+    .title-box { gap: 8px; padding: 14px 12px; }
+    .title-icon { width: 54px; height: 54px; margin-top: -2px; }
+    .title-icon svg { width: 54px; height: 54px; }
+    .main-title { font-size: 20px; line-height: 1.25; }
+    .subtitle-title { font-size: 13px; }
+
+    /* ✅ MOBILE PORTRAIT GRID = 1 card per row */
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .card {
+      grid-template-columns: 56px 1fr;
+      padding: 12px;
+      min-height: 140px;
+    }
+    .icon { width: 56px; height: 56px; }
+    .icon .emoji { font-size: 24px; }
+
+    /* Ensure Card 6 two-emoji pair always fits */
+    [data-id="retirement-risk"] .icon .emoji {
+      font-size: 22px !important;
+      letter-spacing: -6px;
+      line-height: 1;
+    }
+  }
+
+  /* MOBILE LANDSCAPE → show DESKTOP layout (3 per row) */
+  @media (max-width: 480px) and (orientation: landscape) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* TABLET PORTRAIT (481–1024px) → 2 per row */
+  @media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* TABLET LANDSCAPE → no rule needed (falls back to desktop 3 per row) */
 </style>
 </head>
 <body>
@@ -196,41 +285,41 @@
           <div id="todayDate" class="date-field">—</div>
         </div>
 
-        <!-- Title -->
+        <!-- Title: icon + title stick together; subtitle under the group -->
         <div class="title-box">
-          <!-- Magnifying glass: bigger circle, shorter LEFT handle, nudged right; 「理」 centered -->
-          <div class="title-icon" aria-hidden="true">
-            <!-- viewBox 64 x 64, rendered at 68px -->
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
-              <title>Magnifying glass</title>
+          <div class="title-group">
+            <div class="title-icon" aria-hidden="true">
+              <!-- viewBox 64 x 64, rendered at 68px -->
+              <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+                <title>Magnifying glass</title>
 
-              <!-- Bigger circle (r=20). Center at (cx, cy) = (40, 26). -->
-              <circle cx="40" cy="26" r="20"
-                      fill="var(--lens-fill)"
-                      stroke="var(--lens-stroke)" stroke-width="3.5"/>
-              <!-- Highlight -->
-              <circle cx="34" cy="19.5" r="5" fill="var(--lens-gloss)"/>
+                <!-- Bigger circle (r=20). Center at (cx, cy) = (40, 26). -->
+                <circle cx="40" cy="26" r="20"
+                        fill="var(--lens-fill)"
+                        stroke="var(--lens-stroke)" stroke-width="3.5"/>
+                <!-- Highlight -->
+                <circle cx="34" cy="19.5" r="5" fill="var(--lens-gloss)"/>
 
-              <!-- 「理」 perfectly centered in the lens -->
-              <text x="40" y="26"
-                    text-anchor="middle"
-                    dominant-baseline="middle"
-                    font-family="Microsoft JhengHei, PingFang HK, Noto Sans CJK, Arial"
-                    font-size="24" font-weight="900" fill="#2f3b7c">理</text>
+                <!-- 「理」 perfectly centered in the lens -->
+                <text x="40" y="26"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                      font-family="Microsoft JhengHei, PingFang HK, Noto Sans CJK, Arial"
+                      font-size="24" font-weight="900" fill="#2f3b7c">理</text>
 
-              <!-- SHORTER handle on the LEFT -->
-              <line x1="26" y1="36" x2="15" y2="47"
-                    stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
-            </svg>
+                <!-- SHORTER handle on the LEFT -->
+                <line x1="26" y1="36" x2="15" y2="47"
+                      stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <h1 class="main-title">財策劃專業服務跟進</h1>
           </div>
 
-          <div class="title-text">
-            <h1>財策劃專業服務跟進</h1>
-            <p>請選擇您關注的項目（點擊卡片即可勾選／取消）</p>
-          </div>
+          <p class="subtitle-title">請選擇你關注的項目（點擊卡片即可勾選／取消）</p>
         </div>
 
-        <!-- 3 x 2 Grid -->
+        <!-- Grid (desktop default 3 x 2), switches per media queries -->
         <form id="checklist" class="grid">
           <!-- Card 1 -->
           <label class="card" data-id="emergency-cash">
@@ -476,5 +565,6 @@
 </body>
 </html>
 ``
+
 
 
