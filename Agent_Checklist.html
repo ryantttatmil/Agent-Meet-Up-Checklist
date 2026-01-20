@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>財策劃專業服務跟進</title>
+
+<style>
+  :root{
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --ink: #202124;
+    --muted: #5f6368;
+    --brand: #1a73e8;
+    --border: #e0e3eb;
+    --checked: #e6f3ff;
+
+    /* Magnifier colors */
+    --lens-stroke: #2f3b7c;
+    --lens-fill:   #ffffff;
+    --lens-gloss:  #e3e9ff;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang HK", "Heiti TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 28px 18px 40px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  /* Export frame: ensures side margins in PNG/PDF */
+  .export-frame {
+    background: #fff;
+    padding: 24px;                  /* reserved padding for exports */
+    border: 1px solid #e8eaf3;
+    border-radius: 12px;
+  }
+
+  /* Top info bar (Name + Date) */
+  .info-bar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .name-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    flex-wrap: wrap;
+  }
+  .name-field label { color: #1f2a3a; }
+  .name-input {
+    flex: 1 1 auto;
+    max-width: 320px;
+    padding: 8px 10px;
+    border: 1px solid #cfd6e7;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+  }
+
+  /* Name mirror: hidden on screen, visible only during export */
+  .name-mirror {
+    display: none;
+    min-height: 22px;
+    padding: 0 2px;
+    border-bottom: 1px dashed #cfd6e7;
+    color: #1f2a3a;
+    font-weight: 700;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 320px;
+  }
+  .name-mirror.placeholder { color: #9aa0a6; font-weight: 400; }
+  .exporting .name-mirror { display: inline-block !important; }
+  .exporting .name-input { display: none !important; }
+
+  .date-field {
+    font-size: 14px;
+    color: #1f2a3a;
+    font-weight: 700;
+    padding: 8px 10px;
+    border: 1px solid #cfd6e7;
+    border-radius: 8px;
+    background: #fff;
+    min-width: 140px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Header / Title */
+  .title-box {
+    background: linear-gradient(135deg, #ffe9f0, #e8f0fe);
+    border: 1px solid #d7deed;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    align-items: start;
+  }
+
+  /* BIGGER lens, LEFT handle, moved UP slightly, nudged RIGHT slightly */
+  .title-icon {
+    width: 68px;
+    height: 68px;
+    display: inline-block;
+    margin-top: -2px;   /* move whole graphic up a bit */
+    margin-left: 256px;   /* ← nudge to the right a bit */
+  }
+  .title-icon svg { display: block; width: 68px; height: 68px; }
+
+  .title-text { align-self: start; }
+  .title-text h1 {
+    margin: 0 0 4px 0;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .title-text p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* Grid: 3 x 2 */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Card */
+  .card {
+    position: relative; background: var(--card); border: 2px solid var(--border);
+    border-radius: 12px; padding: 14px; min-height: 150px;
+    display: grid; grid-template-columns: 68px 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "icon title" "icon subtitle" "icon footer";
+    column-gap: 12px; cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+  }
+  .card:hover { border-color: #c6d2f7; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+  .card.checked {
+    border-color: var(--brand); background: var(--checked);
+    box-shadow: 0 6px 16px rgba(26,115,232,.12);
+  }
+  .check { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  .icon {
+    grid-area: icon; width: 68px; height: 68px;
+    border: 1px solid var(--border); border-radius: 10px;
+    display: grid; place-items: center; overflow: hidden; background: #fafbff;
+  }
+  .emoji { font-size: 36px; line-height: 1; }
+
+  .title { grid-area: title; font-weight: 800; color: #1f3b2d; font-size: 16px; line-height: 1.25; margin-top: 2px; }
+  .subtitle { grid-area: subtitle; color: #2a6f37; font-weight: 600; font-size: 13px; margin-top: 6px; }
+  .footer { grid-area: footer; margin-top: 10px; color: var(--muted); font-size: 12px; }
+
+  .tick {
+    position: absolute; top: 10px; right: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #e8f5e9; color: #0c6b2e; border: 1px solid #bfe8c9;
+    border-radius: 999px; padding: 4px 8px; font-size: 12px;
+    opacity: 0; transform: translateY(-4px); transition: all .18s ease;
+  }
+  .card.checked .tick { opacity: 1; transform: translateY(0); }
+
+  .note { margin-top: 14px; color: var(--muted); font-size: 12px; text-align: center; }
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  .btn { border: 1px solid #cfd6e7; background: #fff; color: #1a2a3a; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+  @media print { .actions, .note { display: none !important; } body { background: #fff; padding: 0; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- Export frame adds padding so PNG/PDF have side margins -->
+    <div class="export-frame" id="exportFrame">
+      <!-- Capture area (everything inside is exported) -->
+      <div id="captureArea">
+        <!-- Name + Date bar -->
+        <div class="info-bar">
+          <div class="name-field">
+            <label for="clientName">客戶姓名：</label>
+            <!-- Mirror (left of input) — hidden on screen, shown only in export -->
+            <span id="nameMirror" class="name-mirror placeholder">（請輸入姓名）</span>
+            <!-- Input (screen only) -->
+            <input id="clientName" class="name-input" type="text" placeholder="請輸入姓名" />
+          </div>
+          <div id="todayDate" class="date-field">—</div>
+        </div>
+
+        <!-- Title -->
+        <div class="title-box">
+          <!-- Magnifying glass: bigger circle, shorter LEFT handle, nudged right; 「理」 centered -->
+          <div class="title-icon" aria-hidden="true">
+            <!-- viewBox 64 x 64, rendered at 68px -->
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
+              <title>Magnifying glass</title>
+
+              <!-- Bigger circle (r=20). Center at (cx, cy) = (40, 26). -->
+              <circle cx="40" cy="26" r="20"
+                      fill="var(--lens-fill)"
+                      stroke="var(--lens-stroke)" stroke-width="3.5"/>
+              <!-- Highlight -->
+              <circle cx="34" cy="19.5" r="5" fill="var(--lens-gloss)"/>
+
+              <!-- 「理」 perfectly centered in the lens -->
+              <text x="40" y="26"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                    font-family="Microsoft JhengHei, PingFang HK, Noto Sans CJK, Arial"
+                    font-size="24" font-weight="900" fill="#2f3b7c">理</text>
+
+              <!-- SHORTER handle on the LEFT -->
+              <line x1="26" y1="36" x2="15" y2="47"
+                    stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="title-text">
+            <h1>財策劃專業服務跟進</h1>
+            <p>請選擇您關注的項目（點擊卡片即可勾選／取消）</p>
+          </div>
+        </div>
+
+        <!-- 3 x 2 Grid -->
+        <form id="checklist" class="grid">
+          <!-- Card 1 -->
+          <label class="card" data-id="emergency-cash">
+            <input class="check" type="checkbox" name="emergency-cash" />
+            <div class="icon"><span class="emoji" aria-hidden="true">💰</span></div>
+            <div class="title">應急現金</div>
+            <div class="subtitle">足夠提供一年日常支出</div>
+            <div class="footer">建立緊急備用金，提升抗風險能力</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+
+          <!-- Card 2 -->
+          <label class="card" data-id="health-protection">
+            <input class="check" type="checkbox" name="health-protection" />
+            <div class="icon"><span class="emoji" aria-hidden="true">🩺</span></div>
+            <div class="title">醫療及人壽保障</div>
+            <div class="subtitle">應付衝擊帶來的醫療及家庭變故</div>
+            <div class="footer">醫療保險＋壽險配置，守護家庭</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+
+          <!-- Card 3 -->
+          <label class="card" data-id="premium-offset">
+            <input class="check" type="checkbox" name="premium-offset" />
+            <div class="icon"><span class="emoji" aria-hidden="true">📈</span></div>
+            <div class="title">保費對沖方案</div>
+            <div class="subtitle">應付保費調整及增加</div>
+            <div class="footer">資產配置以平滑長期保費壓力</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+
+          <!-- Card 4 -->
+          <label class="card" data-id="annuity-income">
+            <input class="check" type="checkbox" name="annuity-income" />
+            <div class="icon"><span class="emoji" aria-hidden="true">🏠</span></div>
+            <div class="title">定期年金收入</div>
+            <div class="subtitle">提供穩定生活入息</div>
+            <div class="footer">退休現金流計劃與通脹對沖</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+
+          <!-- Card 5 -->
+          <label class="card" data-id="legacy-planning">
+            <input class="check" type="checkbox" name="legacy-planning" />
+            <div class="icon"><span class="emoji" aria-hidden="true">👨‍👩‍👧‍👦</span></div>
+            <div class="title">愛的資產傳承</div>
+            <div class="subtitle">財富增值傳承至第二代</div>
+            <div class="footer">信託／遺囑／壽險傳承安排</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+
+          <!-- Card 6 -->
+          <label class="card" data-id="retirement-risk">
+            <input class="check" type="checkbox" name="retirement-risk" />
+            <div class="icon"><span class="emoji" aria-hidden="true">👵👴</span></div>
+            <div class="title">退「憂」風險</div>
+            <div class="subtitle">應付長壽生活開支</div>
+            <div class="footer">長壽風險管理與醫療護理準備</div>
+            <div class="tick">✓ 已選</div>
+          </label>
+        </form>
+      </div>
+    </div>
+
+    <!-- Buttons (not captured) -->
+    <div class="actions">
+      <button class="btn" type="button" id="clearBtn">清除選擇</button>
+      <button class="btn" type="button" id="pngBtn">導出 PNG</button>
+      <button class="btn primary" type="button" id="pdfBtn">導出 PDF</button>
+    </div>
+
+    <p class="note">提示：你的選擇會自動儲存在此裝置的瀏覽器中。請確保下次使用前清除選項。</p>
+  </div>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<script>
+  // Wait until DOM and external libraries are ready
+  window.addEventListener('load', () => {
+    const form = document.getElementById('checklist');
+    const exportFrame = document.getElementById('exportFrame'); // capture this to keep side spacing
+    const pngBtn = document.getElementById('pngBtn');
+    const pdfBtn = document.getElementById('pdfBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const clientName = document.getElementById('clientName');
+    const nameMirror = document.getElementById('nameMirror');
+    const todayDate = document.getElementById('todayDate');
+
+    const KEY = 'fp_checklist_v1';
+    const KEY_NAME = 'fp_client_name';
+    const SCALE = 2; // Increase to 3 for sharper output (larger files)
+
+    // Fill today's date (yyyy/mm/dd for display; yyyymmdd for filename)
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    todayDate.textContent = `${yyyy}/${mm}/${dd}`;
+    const yyyymmdd = `${yyyy}${mm}${dd}`;
+
+    // Restore saved name and sync mirror
+    clientName.value = localStorage.getItem(KEY_NAME) || '';
+    syncNameMirror();
+    clientName.addEventListener('input', () => {
+      localStorage.setItem(KEY_NAME, clientName.value);
+      syncNameMirror();
+    });
+
+    function syncNameMirror(){
+      const v = clientName.value.trim();
+      if (v) {
+        nameMirror.textContent = v;
+        nameMirror.classList.remove('placeholder');
+      } else {
+        nameMirror.textContent = '（請輸入姓名）';
+        nameMirror.classList.add('placeholder');
+      }
+    }
+
+    // Ensure libraries loaded
+    if (typeof window.html2canvas !== 'function') {
+      alert('html2canvas 載入失敗，請檢查網絡或 CDN。');
+      return;
+    }
+    if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
+      alert('jsPDF 載入失敗，請檢查網絡或 CDN。');
+      return;
+    }
+
+    // Restore saved checkbox state
+    const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    [...form.querySelectorAll('.card')].forEach(card => {
+      const id = card.dataset.id;
+      const input = card.querySelector('.check');
+      const isChecked = !!saved[id];
+      input.checked = isChecked;
+      card.classList.toggle('checked', isChecked);
+      input.addEventListener('change', () => {
+        card.classList.toggle('checked', input.checked);
+        persist();
+      });
+    });
+
+    function persist(){
+      const state = {};
+      [...form.querySelectorAll('.card')].forEach(card => {
+        const id = card.dataset.id;
+        const input = card.querySelector('.check');
+        state[id] = input.checked;
+      });
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
+
+    clearBtn.addEventListener('click', () => {
+      [...form.querySelectorAll('.card')].forEach(card => {
+        const input = card.querySelector('.check');
+        input.checked = false;
+        card.classList.remove('checked');
+      });
+      persist();
+    });
+
+    // Toggle export mode: hide input, show mirror (so it captures cleanly)
+    async function captureWithExporting(fn){
+      exportFrame.classList.add('exporting');
+      clientName.blur(); // guarantee paint
+      try {
+        await fn();
+      } finally {
+        exportFrame.classList.remove('exporting');
+      }
+    }
+
+    // Filename helper
+    function safeFilename(base){
+      return base.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
+    }
+
+    // Export as PNG
+    pngBtn.addEventListener('click', () => {
+      captureWithExporting(async () => {
+        const canvas = await html2canvas(exportFrame, {
+          backgroundColor: '#ffffff',
+          scale: SCALE,
+          useCORS: true,
+          logging: false
+        });
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const client = (clientName.value.trim() || '選項截圖');
+          a.href = url;
+          a.download = `${safeFilename(client)}_${yyyymmdd}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      });
+    });
+
+    // Export as PDF
+    pdfBtn.addEventListener('click', () => {
+      captureWithExporting(async () => {
+        const canvas = await html2canvas(exportFrame, {
+          backgroundColor: '#ffffff',
+          scale: SCALE,
+          useCORS: true,
+          logging: false
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+
+        // Orientation based on canvas
+        const isLandscape = canvas.width > canvas.height;
+        const pdf = new jsPDF({
+          orientation: isLandscape ? 'landscape' : 'portrait',
+          unit: 'pt',
+          format: 'a4'
+        });
+
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+
+        // Keep margins on paper: scale to 90% of page
+        const maxW = pageW * 0.90;
+        const maxH = pageH * 0.90;
+        const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        const x = (pageW - imgW) / 2;
+        const y = (pageH - imgH) / 2;
+
+        pdf.addImage(imgData, 'PNG', x, y, imgW, imgH);
+
+        const client = (clientName.value.trim() || '選項截圖');
+        pdf.save(`${safeFilename(client)}_${yyyymmdd}.pdf`);
+      });
+    });
+  });
+</script>
+</body>
+</html>
+``
