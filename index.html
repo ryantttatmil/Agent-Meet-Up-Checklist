@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -15,6 +16,10 @@
     --border: #e0e3eb;
     --checked: #e6f3ff;
 
+    /* Deficit (不足！) theme */
+    --deficit-border: #d93025;
+    --deficit-bg: #fde8e6;
+
     /* Magnifier colors */
     --lens-stroke: #2f3b7c;
     --lens-fill:   #ffffff;
@@ -31,10 +36,10 @@
   }
   .wrap { max-width: 980px; margin: 0 auto; }
 
-  /* Export frame: ensures side margins in PNG/PDF */
+  /* Export frame */
   .export-frame {
     background: #fff;
-    padding: 24px;                  /* reserved padding for exports */
+    padding: 24px;
     border: 1px solid #e8eaf3;
     border-radius: 12px;
   }
@@ -65,7 +70,7 @@
     background: #fff;
   }
 
-  /* Name mirror: hidden on screen, visible only during export */
+  /* Name mirror (export only) */
   .name-mirror {
     display: none;
     min-height: 22px;
@@ -102,32 +107,21 @@
     padding: 18px 20px;
     margin-bottom: 22px;
 
-    /* Stack group + subtitle, and center */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 8px;
     text-align: center;
   }
 
-  /* Group icon + title text so they always stick together */
   .title-group {
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 12px; /* default overridden below to 4px (Option C) */
+    gap: 4px; /* tight */
   }
 
-  .title-icon {
-    width: 68px;
-    height: 68px;
-    display: inline-block;
-    margin: 0;
-    margin-top: 12px;              /* slight baseline alignment tweak */
-    flex: 0 0 auto;
-  }
+  .title-icon { width: 68px; height: 68px; margin-top: -2px; flex: 0 0 auto; }
   .title-icon svg { display: block; width: 68px; height: 68px; }
 
   .main-title {
@@ -135,59 +129,64 @@
     font-size: 24px;
     font-weight: 900;
     line-height: 1.2;
-    white-space: normal;
-    word-break: keep-all;          /* better for CJK */
-  }
-
-  .subtitle-title {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14px;
-  }
-
-  /* >>> Option C: bring icon + title closer (very tight) */
-  .title-group { gap: 4px; }
-
-  /* >>> Option A: nudge the title text up to align with icon */
-  .title-group .main-title {
+    word-break: keep-all;
     transform: translateY(-2px);
   }
   @media (max-width: 480px) {
-    .title-group .main-title {
-      transform: translateY(-1px);
-    }
+    .main-title { transform: translateY(-1px); }
   }
+
+  .subtitle-title { margin: 0; color: var(--muted); font-size: 14px; }
 
   /* Grid: default desktop = 3 columns */
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
   /* Card */
   .card {
-    position: relative; background: var(--card); border: 2px solid var(--border);
-    border-radius: 12px; padding: 14px; min-height: 150px;
-    display: grid; grid-template-columns: 68px 1fr;
+    position: relative;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 150px;
+
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
     grid-template-rows: auto auto 1fr;
     grid-template-areas: "icon title" "icon subtitle" "icon footer";
-    column-gap: 12px; cursor: pointer;
+    column-gap: 12px;
+    cursor: pointer;
     transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .card:hover { border-color: #c6d2f7; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
-  .card.checked {
-    border-color: var(--brand); background: var(--checked);
-    box-shadow: 0 6px 16px rgba(26,115,232,.12);
+  .card.checked { border-color: var(--brand); background: var(--checked); box-shadow: 0 6px 16px rgba(26,115,232,.12); }
+
+  /* 🔴 Deficit (不足！) state */
+  .card.deficit {
+    border-color: var(--deficit-border) !important;
+    background: var(--deficit-bg) !important;
+    box-shadow: 0 6px 16px rgba(217,48,37,.12);
   }
+
   .check { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+
   .icon {
-    grid-area: icon; width: 68px; height: 68px;
+    grid-area: icon;
+    width: 68px; height: 68px;
     border: 1px solid var(--border);
     border-radius: 10px;
     display: grid; place-items: center; overflow: hidden; background: #fafbff;
+    min-width: 0;
   }
   .emoji { font-size: 36px; line-height: 1; }
 
-  .title { grid-area: title; font-weight: 800; color: #1f3b2d; font-size: 16px; line-height: 1.25; margin-top: 2px; }
-  .subtitle { grid-area: subtitle; color: #2a6f37; font-weight: 600; font-size: 13px; margin-top: 6px; }
-  .footer { grid-area: footer; margin-top: 10px; color: var(--muted); font-size: 12px; }
+  .title { grid-area: title; font-weight: 800; color: #1f3b2d; font-size: 16px; line-height: 1.25; margin-top: 2px; min-width: 0; }
+  .subtitle { grid-area: subtitle; color: #2a6f37; font-weight: 600; font-size: 13px; margin-top: 6px; min-width: 0; }
+  .footer { grid-area: footer; margin-top: 10px; color: var(--muted); font-size: 12px; min-width: 0; }
 
   .tick {
     position: absolute; top: 10px; right: 10px;
@@ -205,184 +204,281 @@
 
   @media print { .actions, .note { display: none !important; } body { background: #fff; padding: 0; } }
 
-  /* ===== Mobile & Tablet responsive rules per your spec ===== */
+  /* ===== Money area ===== */
+  .money { grid-column: 1 / -1; margin-top: 8px; width: 100%; min-width: 0; }
 
-  /* MOBILE PORTRAIT → 1 per row (6 rows total for 6 cards) */
+  /* Row above the input: left = 金額 toggle, right = 不足！ toggle */
+  .money .money-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0;
+  }
+
+  .money .money-toggle,
+  .money .deficit-toggle {
+    border: 1px solid #cfd6e7;
+    background: #fff;
+    color: #1a2a3a;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .money .deficit-toggle[aria-pressed="true"] {
+    background: var(--deficit-border);
+    border-color: var(--deficit-border);
+    color: #fff;
+  }
+
+  .money .money-box { display: none; margin-top: 8px; width: 100%; max-width: 100%; overflow: hidden; }
+  .money .money-box.open { display: block; }
+
+  .money .money-field {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid #cfd6e7; border-radius: 8px; padding: 6px 8px; background: #fff;
+    width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box;
+  }
+  .money .currency-select {
+    border: 1px solid #cfd6e7; border-radius: 6px; padding: 4px 8px; font-size: 12px; background: #fff; color: #1a2a3a;
+    flex: 0 0 auto; max-width: 30%;
+  }
+  .money .money-input { flex: 1 1 auto; min-width: 0; width: 100%; border: 0; outline: none; font-size: 14px; box-sizing: border-box; }
+
+  .money, .money * { pointer-events: auto; } /* allow inputs inside label */
+
+  /* Containment guards */
+  .wrap, .export-frame, .grid { max-width: 100%; overflow-x: hidden; }
+
   @media (max-width: 480px) and (orientation: portrait) {
-    body { padding: 16px 12px 28px; }
-
-    .export-frame {
-      padding: 16px;
-      border-radius: 10px;
-    }
-
-    .info-bar {
-      grid-template-columns: 1fr;
-      row-gap: 8px;
-    }
-    .date-field { justify-self: start; }
-    .name-field { gap: 6px; }
-    .name-input { max-width: 100%; width: 100%; }
-
-    .title-box { gap: 8px; padding: 14px 12px; }
-    .title-icon { width: 54px; height: 54px; margin-top: -2px; }
-    .title-icon svg { width: 54px; height: 54px; }
-    .main-title { font-size: 20px; line-height: 1.25; }
-    .subtitle-title { font-size: 13px; }
-
-    /* ✅ MOBILE PORTRAIT GRID = 1 card per row */
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
     .card {
-      grid-template-columns: 56px 1fr;
-      padding: 12px;
-      min-height: 140px;
+      grid-template-columns: 56px minmax(0, 1fr);
+      padding: 12px; min-height: 140px;
     }
     .icon { width: 56px; height: 56px; }
     .icon .emoji { font-size: 24px; }
-
-    /* Ensure Card 6 two-emoji pair always fits */
-    [data-id="retirement-risk"] .icon .emoji {
-      font-size: 22px !important;
-      letter-spacing: -6px;
-      line-height: 1;
-    }
   }
 
-  /* MOBILE LANDSCAPE → show DESKTOP layout (3 per row) */
-  @media (max-width: 480px) and (orientation: landscape) {
-    .grid { grid-template-columns: repeat(3, 1fr); }
+  /* ===== Mobile grid rules ===== */
+  @media (max-width: 480px) and (orientation: portrait) {
+    body { padding: 16px 12px 28px; }
+    .export-frame { padding: 16px; border-radius: 10px; }
+    .info-bar { grid-template-columns: 1fr; row-gap: 8px; }
+    .date-field { justify-self: start; }
+    .name-field { gap: 6px; }
+    .name-input { max-width: 100%; width: 100%; }
+    .title-box { gap: 8px; padding: 14px 12px; }
+    .title-icon { width: 54px; height: 54px; margin-top: 12px; }
+    .title-icon svg { width: 54px; height: 54px; }
+    .main-title { font-size: 20px; line-height: 1.25; }
+    .subtitle-title { font-size: 13px; }
+    .grid { grid-template-columns: 1fr; gap: 22px; }
+    [data-id="retirement-risk"] .icon .emoji { font-size: 22px !important; letter-spacing: -6px; line-height: 1; }
   }
-
-  /* TABLET PORTRAIT (481–1024px) → 2 per row */
-  @media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) {
-    .grid { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  /* TABLET LANDSCAPE → no rule needed (falls back to desktop 3 per row) */
+  @media (max-width: 480px) and (orientation: landscape) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) { .grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
   <div class="wrap">
 
-    <!-- Export frame adds padding so PNG/PDF have side margins -->
     <div class="export-frame" id="exportFrame">
-      <!-- Capture area (everything inside is exported) -->
       <div id="captureArea">
         <!-- Name + Date bar -->
         <div class="info-bar">
           <div class="name-field">
             <label for="clientName">客戶姓名：</label>
-            <!-- Mirror (left of input) — hidden on screen, shown only in export -->
             <span id="nameMirror" class="name-mirror placeholder">（請輸入姓名）</span>
-            <!-- Input (screen only) -->
             <input id="clientName" class="name-input" type="text" placeholder="請輸入姓名" />
           </div>
           <div id="todayDate" class="date-field">—</div>
         </div>
 
-        <!-- Title: icon + title stick together; subtitle under the group -->
+        <!-- Title -->
         <div class="title-box">
           <div class="title-group">
             <div class="title-icon" aria-hidden="true">
-              <!-- viewBox 64 x 64, rendered at 68px -->
               <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-                <title>Magnifying glass</title>
-
-                <!-- Bigger circle (r=20). Center at (cx, cy) = (40, 26). -->
-                <circle cx="40" cy="26" r="20"
-                        fill="var(--lens-fill)"
-                        stroke="var(--lens-stroke)" stroke-width="3.5"/>
-                <!-- Highlight -->
+                <circle cx="40" cy="26" r="20" fill="var(--lens-fill)" stroke="var(--lens-stroke)" stroke-width="3.5"/>
                 <circle cx="34" cy="19.5" r="5" fill="var(--lens-gloss)"/>
-
-                <!-- 「理」 perfectly centered in the lens -->
-                <text x="40" y="26"
-                      text-anchor="middle"
-                      dominant-baseline="middle"
+                <text x="40" y="26" text-anchor="middle" dominant-baseline="middle"
                       font-family="Microsoft JhengHei, PingFang HK, Noto Sans CJK, Arial"
                       font-size="24" font-weight="900" fill="#2f3b7c">理</text>
-
-                <!-- SHORTER handle on the LEFT -->
-                <line x1="26" y1="36" x2="15" y2="47"
-                      stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
+                <line x1="26" y1="36" x2="15" y2="47" stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
               </svg>
             </div>
-
             <h1 class="main-title">財策劃專業服務跟進</h1>
           </div>
-
           <p class="subtitle-title">請選擇您關注的項目（點擊卡片即可勾選／取消）</p>
         </div>
 
-        <!-- Grid (desktop default 3 x 2), switches per media queries -->
+        <!-- Cards -->
         <form id="checklist" class="grid">
-          <!-- Card 1 -->
+          <!-- 1 -->
           <label class="card" data-id="emergency-cash">
             <input class="check" type="checkbox" name="emergency-cash" />
-            <div class="icon"><span class="emoji" aria-hidden="true">💰</span></div>
+            <div class="icon"><span class="emoji">💰</span></div>
             <div class="title">應急現金</div>
             <div class="subtitle">足夠提供一年日常支出</div>
             <div class="footer">建立緊急備用金，提升抗風險能力</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
 
-          <!-- Card 2 -->
+          <!-- 2 -->
           <label class="card" data-id="health-protection">
             <input class="check" type="checkbox" name="health-protection" />
-            <div class="icon"><span class="emoji" aria-hidden="true">🩺</span></div>
+            <div class="icon"><span class="emoji">🩺</span></div>
             <div class="title">醫療及人壽保障</div>
             <div class="subtitle">應付衝擊帶來的醫療及家庭變故</div>
             <div class="footer">醫療保險＋壽險配置，守護家庭</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
 
-          <!-- Card 3 -->
+          <!-- 3 -->
           <label class="card" data-id="premium-offset">
             <input class="check" type="checkbox" name="premium-offset" />
-            <div class="icon"><span class="emoji" aria-hidden="true">📈</span></div>
+            <div class="icon"><span class="emoji">📈</span></div>
             <div class="title">保費對沖方案</div>
             <div class="subtitle">應付保費調整及增加</div>
             <div class="footer">資產配置以平滑長期保費壓力</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
 
-          <!-- Card 4 -->
+          <!-- 4 -->
           <label class="card" data-id="annuity-income">
             <input class="check" type="checkbox" name="annuity-income" />
-            <div class="icon"><span class="emoji" aria-hidden="true">🏠</span></div>
+            <div class="icon"><span class="emoji">🏠</span></div>
             <div class="title">定期年金收入</div>
             <div class="subtitle">提供穩定生活入息</div>
             <div class="footer">退休現金流計劃與通脹對沖</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
 
-          <!-- Card 5 -->
+          <!-- 5 -->
           <label class="card" data-id="legacy-planning">
             <input class="check" type="checkbox" name="legacy-planning" />
-            <div class="icon"><span class="emoji" aria-hidden="true">👨‍👩‍👧‍👦</span></div>
+            <div class="icon"><span class="emoji">👨‍👩‍👧‍👦</span></div>
             <div class="title">愛的資產傳承</div>
             <div class="subtitle">財富增值傳承至第二代</div>
             <div class="footer">信託／遺囑／壽險傳承安排</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
 
-          <!-- Card 6 -->
+          <!-- 6 -->
           <label class="card" data-id="retirement-risk">
             <input class="check" type="checkbox" name="retirement-risk" />
-            <div class="icon"><span class="emoji" aria-hidden="true" style="font-size:26px; letter-spacing:-6px; line-height:1;">👵👴</span></div>
+            <div class="icon"><span class="emoji" style="font-size:26px; letter-spacing:-6px; line-height:1;">👵👴</span></div>
             <div class="title">退「憂」風險</div>
             <div class="subtitle">應付長壽生活開支</div>
             <div class="footer">長壽風險管理與醫療護理準備</div>
+
+            <div class="money">
+              <div class="money-header">
+                <button type="button" class="money-toggle">金額</button>
+                <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
+              </div>
+              <div class="money-box">
+                <div class="money-field">
+                  <select class="currency-select" aria-label="貨幣">
+                    <option value="HKD">HKD$</option>
+                    <option value="USD">USD$</option>
+                  </select>
+                  <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
             <div class="tick">✓ 已選</div>
           </label>
         </form>
       </div>
     </div>
 
-    <!-- Buttons (not captured) -->
+    <!-- Buttons -->
     <div class="actions">
       <button class="btn" type="button" id="clearBtn">清除選擇</button>
       <button class="btn" type="button" id="pngBtn">導出 PNG</button>
@@ -400,7 +496,7 @@
   // Wait until DOM and external libraries are ready
   window.addEventListener('load', () => {
     const form = document.getElementById('checklist');
-    const exportFrame = document.getElementById('exportFrame'); // capture this to keep side spacing
+    const exportFrame = document.getElementById('exportFrame');
     const pngBtn = document.getElementById('pngBtn');
     const pdfBtn = document.getElementById('pdfBtn');
     const clearBtn = document.getElementById('clearBtn');
@@ -410,9 +506,9 @@
 
     const KEY = 'fp_checklist_v1';
     const KEY_NAME = 'fp_client_name';
-    const SCALE = 2; // Increase to 3 for sharper output (larger files)
+    const SCALE = 2;
 
-    // Fill today's date (yyyy/mm/dd for display; yyyymmdd for filename)
+    // Date
     const now = new Date();
     const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -420,36 +516,24 @@
     todayDate.textContent = `${yyyy}/${mm}/${dd}`;
     const yyyymmdd = `${yyyy}${mm}${dd}`;
 
-    // Restore saved name and sync mirror
+    // Name restore + mirror
     clientName.value = localStorage.getItem(KEY_NAME) || '';
     syncNameMirror();
     clientName.addEventListener('input', () => {
       localStorage.setItem(KEY_NAME, clientName.value);
       syncNameMirror();
     });
-
     function syncNameMirror(){
       const v = clientName.value.trim();
-      if (v) {
-        nameMirror.textContent = v;
-        nameMirror.classList.remove('placeholder');
-      } else {
-        nameMirror.textContent = '（請輸入姓名）';
-        nameMirror.classList.add('placeholder');
-      }
+      if (v) { nameMirror.textContent = v; nameMirror.classList.remove('placeholder'); }
+      else { nameMirror.textContent = '（請輸入姓名）'; nameMirror.classList.add('placeholder'); }
     }
 
-    // Ensure libraries loaded
-    if (typeof window.html2canvas !== 'function') {
-      alert('html2canvas 載入失敗，請檢查網絡或 CDN。');
-      return;
-    }
-    if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
-      alert('jsPDF 載入失敗，請檢查網絡或 CDN。');
-      return;
-    }
+    // Library checks
+    if (typeof window.html2canvas !== 'function') { alert('html2canvas 載入失敗，請檢查網絡或 CDN。'); return; }
+    if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') { alert('jsPDF 載入失敗，請檢查網絡或 CDN。'); return; }
 
-    // Restore saved checkbox state
+    // Restore quick checkbox state
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     [...form.querySelectorAll('.card')].forEach(card => {
       const id = card.dataset.id;
@@ -462,7 +546,6 @@
         persist();
       });
     });
-
     function persist(){
       const state = {};
       [...form.querySelectorAll('.card')].forEach(card => {
@@ -473,285 +556,287 @@
       localStorage.setItem(KEY, JSON.stringify(state));
     }
 
-    // CLEAR: also clear client name & saved name
+    /* ============================
+       Money + Currency + Deficit (不足！)
+       ============================ */
+    const MONEY_INPUTS = new Map(); // id -> { input, box, toggle, currencySelect, deficitBtn, card }
+
+    function setupMoneyAndDeficit(){
+      [...form.querySelectorAll('.card')].forEach(card => {
+        const id = card.dataset.id;
+        const money = card.querySelector('.money');
+        if(!money) return;
+
+        const box = money.querySelector('.money-box');
+        const toggleBtn = money.querySelector('.money-toggle');
+        const input = money.querySelector('.money-input');
+        const currencySelect = money.querySelector('.currency-select');
+        const deficitBtn = money.querySelector('.deficit-toggle');
+
+        if(!box || !toggleBtn || !input || !currencySelect || !deficitBtn) return;
+
+        // Prevent label toggle while interacting
+        const stopOnly = (e) => { e.stopPropagation(); };
+        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); box.classList.toggle('open'); });
+        input.addEventListener('click', stopOnly);
+        currencySelect.addEventListener('click', stopOnly);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } e.stopPropagation(); });
+
+        // Sanitize input
+        input.addEventListener('input', () => {
+          const v = input.value.replace(/[^\d.]/g, '');
+          const parts = v.split('.');
+          input.value = parts.length > 2 ? (parts[0] + '.' + parts.slice(1).join('')) : v;
+        });
+
+        // 不足！ toggle
+        deficitBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const next = deficitBtn.getAttribute('aria-pressed') !== 'true';
+          deficitBtn.setAttribute('aria-pressed', String(next));
+          card.classList.toggle('deficit', next);
+        });
+
+        MONEY_INPUTS.set(id, { input, box, toggle: toggleBtn, currencySelect, deficitBtn, card });
+      });
+    }
+    setupMoneyAndDeficit();
+
+    function readAmounts(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=(r.input.value||'').trim()); return out; }
+    function readCurrencies(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=r.currencySelect.value || 'HKD'); return out; }
+    function readDeficits(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=r.card.classList.contains('deficit')); return out; }
+
+    function applyAmounts(amounts = {}){ MONEY_INPUTS.forEach((r,id)=>{ const v=amounts[id]||''; r.input.value=v; r.box.classList.toggle('open', !!v); }); }
+    function applyCurrencies(currencies = {}){ MONEY_INPUTS.forEach((r,id)=>{ r.currencySelect.value = currencies[id] || 'HKD'; }); }
+    function applyDeficits(deficits = {}){ MONEY_INPUTS.forEach((r,id)=>{ const on=!!deficits[id]; r.card.classList.toggle('deficit', on); r.deficitBtn.setAttribute('aria-pressed', String(on)); }); }
+
+    // Clear: also clear name, money, currency, deficit
     clearBtn.addEventListener('click', () => {
       [...form.querySelectorAll('.card')].forEach(card => {
         const input = card.querySelector('.check');
         input.checked = false;
-        card.classList.remove('checked');
+        card.classList.remove('checked', 'deficit');
       });
       persist();
+
       clientName.value = '';
       localStorage.removeItem(KEY_NAME);
       syncNameMirror();
+
+      MONEY_INPUTS.forEach(({ input, box, currencySelect, deficitBtn }) => {
+        input.value = '';
+        box.classList.remove('open');
+        currencySelect.value = 'HKD';
+        deficitBtn.setAttribute('aria-pressed', 'false');
+      });
+
       clientName.focus();
     });
 
-    // Toggle export mode: hide input, show mirror (so it captures cleanly)
+    // Capture with export-only UI swap
     async function captureWithExporting(fn){
       exportFrame.classList.add('exporting');
-      clientName.blur(); // guarantee paint
-      try {
-        await fn();
-      } finally {
-        exportFrame.classList.remove('exporting');
-      }
+      clientName.blur();
+      try { await fn(); } finally { exportFrame.classList.remove('exporting'); }
     }
+    function safeFilename(base){ return base.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim(); }
 
-    // Filename helper
-    function safeFilename(base){
-      return base.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
-    }
-
-    // Export as PNG
+    // Export PNG
     pngBtn.addEventListener('click', () => {
       captureWithExporting(async () => {
-        const canvas = await html2canvas(exportFrame, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          logging: false
-        });
+        const canvas = await html2canvas(exportFrame, { backgroundColor: '#ffffff', scale: SCALE, useCORS: true, logging: false });
         canvas.toBlob((blob) => {
           if (!blob) return;
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           const client = (clientName.value.trim() || '選項截圖');
-          a.href = url;
-          a.download = `${safeFilename(client)}_${yyyymmdd}.png`;
-          a.click();
+          a.href = url; a.download = `${safeFilename(client)}_${yyyymmdd}.png`; a.click();
           URL.revokeObjectURL(url);
         }, 'image/png');
       });
     });
 
-    // Export as PDF
+    // Export PDF
     pdfBtn.addEventListener('click', () => {
       captureWithExporting(async () => {
-        const canvas = await html2canvas(exportFrame, {
-          backgroundColor: '#ffffff',
-          scale: SCALE,
-          useCORS: true,
-          logging: false
-        });
+        const canvas = await html2canvas(exportFrame, { backgroundColor: '#ffffff', scale: SCALE, useCORS: true, logging: false });
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
-
-        // Orientation based on canvas
         const isLandscape = canvas.width > canvas.height;
-        const pdf = new jsPDF({
-          orientation: isLandscape ? 'landscape' : 'portrait',
-          unit: 'pt',
-          format: 'a4'
-        });
-
+        const pdf = new jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'pt', format: 'a4' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-
-        // Keep margins on paper: scale to 90% of page
-        const maxW = pageW * 0.90;
-        const maxH = pageH * 0.90;
+        const maxW = pageW * 0.90, maxH = pageH * 0.90;
         const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
-        const imgW = canvas.width * ratio;
-        const imgH = canvas.height * ratio;
-        const x = (pageW - imgW) / 2;
-        const y = (pageH - imgH) / 2;
-
+        const imgW = canvas.width * ratio, imgH = canvas.height * ratio;
+        const x = (pageW - imgW) / 2, y = (pageH - imgH) / 2;
         pdf.addImage(imgData, 'PNG', x, y, imgW, imgH);
-
         const client = (clientName.value.trim() || '選項截圖');
         pdf.save(`${safeFilename(client)}_${yyyymmdd}.pdf`);
       });
     });
 
-    /* === Sidebar (hidden by default) + Save Profiles — additive === */
+    /* === Sidebar (hidden by default) + Save Profiles === */
 
-    /** 1) Inject CSS: off-canvas by default, toggle button moves to top-right on mobile (Option 2) */
+    // Inject sidebar CSS
     const __sidebarCSS = `
-    /* Sidebar shell: hidden off-canvas by default */
-    .client-sidebar {
+    .client-sidebar{
       position: fixed; inset: 0 auto 0 0; width: 260px;
-      background: #ffffff; border-right: 1px solid #e8eaf3;
-      padding: 16px 12px; overflow: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,.06);
-      transform: translateX(-100%); transition: transform .2s ease;
-      z-index: 9;
+      background:#fff; border-right:1px solid #e8eaf3;
+      padding:16px 12px; overflow:auto;
+      box-shadow:0 0 10px rgba(0,0,0,.06);
+      transform:translateX(-100%); transition:transform .2s ease;
+      z-index:9;
     }
-    body.sidebar-open .client-sidebar { transform: translateX(0); }
-
-    .client-sidebar h2 { margin: 4px 8px 8px; font-size: 14px; letter-spacing: .5px; color:#1f2a3a; }
-    .client-sidebar .search {
-      width:100%; padding:8px 10px; border:1px solid #cfd6e7; border-radius:8px; margin: 8px 6px 12px; font-size: 13px;
+    body.sidebar-open .client-sidebar{ transform:translateX(0); }
+    .client-sidebar h2{ margin:4px 8px 8px; font-size:14px; letter-spacing:.5px; color:#1f2a3a; }
+    .client-sidebar .search{ width:100%; padding:8px 10px; border:1px solid #cfd6e7; border-radius:8px; margin:8px 6px 12px; font-size:13px; }
+    .client-list{ list-style:none; margin:0; padding:0 6px; display:grid; gap:8px; }
+    .client-item{ border:1px solid #e0e3eb; border-radius:10px; padding:10px; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .client-item .meta{ display:flex; flex-direction:column; min-width:0; }
+    .client-item .name{ font-weight:700; font-size:14px; color:#1f2a3a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .client-item .date{ font-size:12px; color:#5f6368; }
+    .client-item .actions{ display:flex; gap:6px; }
+    .client-item .btn-xs{ border:1px solid #cfd6e7; background:#fff; color:#1a2a3a; padding:4px 8px; border-radius:8px; font-size:12px; cursor:pointer; }
+    .client-empty{ padding:10px 8px; color:#5f6368; font-size:12px; }
+    .sidebar-toggle{
+      position:fixed;
+      left:max(10px, env(safe-area-inset-left,0px) + 10px);
+      top:max(10px, env(safe-area-inset-top,0px) + 10px);
+      z-index:10; border:1px solid #cfd6e7; background:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
     }
-    .client-list { list-style: none; margin: 0; padding: 0 6px; display: grid; gap: 8px; }
-    .client-item {
-      border: 1px solid #e0e3eb; border-radius:10px; padding: 10px; background:#fff;
-      display:flex; align-items: center; justify-content: space-between; gap:8px;
-    }
-    .client-item .meta { display:flex; flex-direction: column; min-width: 0; }
-    .client-item .name { font-weight: 700; font-size: 14px; color:#1f2a3a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .client-item .date { font-size: 12px; color:#5f6368; }
-    .client-item .actions { display:flex; gap:6px; }
-    .client-item .btn-xs {
-      border:1px solid #cfd6e7; background:#fff; color:#1a2a3a;
-      padding:4px 8px; border-radius: 8px; font-size:12px; cursor:pointer;
-    }
-    .client-empty { padding: 10px 8px; color:#5f6368; font-size: 12px; }
-
-    /* Toggle button: default top-left, with safe-area insets */
-    .sidebar-toggle {
-      position: fixed;
-      left: max(10px, env(safe-area-inset-left, 0px) + 10px);
-      top:  max(10px, env(safe-area-inset-top, 0px) + 10px);
-      z-index: 10;
-      border: 1px solid #cfd6e7; background:#fff; padding:8px 12px; border-radius:8px;
-      font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-    }
-
-    /* Option 2: On mobile, move toggle to top-right (avoid overlapping name field) */
-    @media (max-width: 480px) {
-      .sidebar-toggle {
-        left: auto;
-        right: max(10px, env(safe-area-inset-right, 0px) + 10px);
-        top:  max(10px, env(safe-area-inset-top, 0px) + 10px);
+    @media (max-width:480px){
+      .sidebar-toggle{
+        left:auto;
+        right:max(10px, env(safe-area-inset-right,0px) + 10px);
+        top:max(10px, env(safe-area-inset-top,0px) + 10px);
       }
-      .client-sidebar { width: 85vw; }
-    }
-    `;
-    const __styleEl = document.createElement('style');
-    __styleEl.textContent = __sidebarCSS;
-    document.head.appendChild(__styleEl);
+      .client-sidebar{ width:85vw; }
+    }`;
+    const styleEl = document.createElement('style'); styleEl.textContent = __sidebarCSS; document.head.appendChild(styleEl);
 
-    /** 2) Build the sidebar (outside export area so it never gets captured) */
-    const __sidebar = document.createElement('aside');
-    __sidebar.className = 'client-sidebar';
-    __sidebar.setAttribute('aria-hidden', 'true');
-    __sidebar.innerHTML = `
+    // Build sidebar
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'client-sidebar';
+    sidebar.setAttribute('aria-hidden', 'true');
+    sidebar.innerHTML = `
       <h2>客戶列表</h2>
       <input type="search" class="search" placeholder="搜尋姓名…" aria-label="搜尋姓名" />
       <ul class="client-list" id="clientList"></ul>
-      <div class="client-empty" id="clientEmpty" style="display:none;">尚未儲存任何客戶。</div>
-    `;
-    document.body.appendChild(__sidebar);
+      <div class="client-empty" id="clientEmpty" style="display:none;">尚未儲存任何客戶。</div>`;
+    document.body.appendChild(sidebar);
 
-    /** 3) Toggle button (always visible) */
-    const __toggle = document.createElement('button');
-    __toggle.className = 'sidebar-toggle';
-    __toggle.type = 'button';
-    __toggle.setAttribute('aria-expanded', 'false');
-    __toggle.setAttribute('aria-controls', 'clientList');
-    __toggle.innerHTML = '☰ 客戶';
-    __toggle.addEventListener('click', () => {
+    // Toggle button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'sidebar-toggle';
+    toggleBtn.type = 'button';
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    toggleBtn.setAttribute('aria-controls', 'clientList');
+    toggleBtn.textContent = '☰ 客戶';
+    toggleBtn.addEventListener('click', () => {
       const open = document.body.classList.toggle('sidebar-open');
-      __toggle.setAttribute('aria-expanded', String(open));
-      __sidebar.setAttribute('aria-hidden', String(!open));
+      toggleBtn.setAttribute('aria-expanded', String(open));
+      sidebar.setAttribute('aria-hidden', String(!open));
     });
-    document.body.appendChild(__toggle);
+    document.body.appendChild(toggleBtn);
 
-    /** 4) Add a "Save" button next to your export buttons (as 2nd from left) */
+    // Insert Save (2nd from left — before PNG)
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn';
     saveBtn.type = 'button';
     saveBtn.id = 'saveBtn';
     saveBtn.textContent = '儲存資料';
-    // Insert before PNG button → order: 清除選擇 | 儲存資料 | 導出 PNG | 導出 PDF
     pngBtn.insertAdjacentElement('beforebegin', saveBtn);
 
-    /** 5) Profiles storage helpers */
+    // Profiles storage
     const PROFILES_KEY = 'fp_profiles_v1';
+    function loadProfiles(){ try{ return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; }catch(e){ return []; } }
+    function storeProfiles(list){ localStorage.setItem(PROFILES_KEY, JSON.stringify(list)); }
 
-    function __loadProfiles(){
-      try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; }
-      catch(e){ return []; }
-    }
-    function __storeProfiles(list){
-      localStorage.setItem(PROFILES_KEY, JSON.stringify(list));
-    }
-    function __readCurrentState(){
-      const state = {};
+    function readState(){
+      const s = {};
       [...form.querySelectorAll('.card')].forEach(card => {
         const id = card.dataset.id;
-        const input = card.querySelector('.check');
-        state[id] = !!input.checked;
+        s[id] = !!card.querySelector('.check').checked;
       });
-      return state;
+      return s;
     }
-    function __applyState(state){
+
+    function applyState(state){
       [...form.querySelectorAll('.card')].forEach(card => {
         const id = card.dataset.id;
+        const on = !!state[id];
         const input = card.querySelector('.check');
-        const checked = !!state[id];
-        input.checked = checked;
-        card.classList.toggle('checked', checked);
+        input.checked = on; card.classList.toggle('checked', on);
       });
-      // Keep your original localStorage KEY in sync
       persist();
     }
-    function __formatDT(d = new Date()){
+
+    function formatDT(d = new Date()){
       const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
-      const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
-      return `${y}/${m}/${dd} ${hh}:${mm}`;
+      const hh=String(d.getHours()).padStart(2,'0'), mn=String(d.getMinutes()).padStart(2,'0');
+      return `${y}/${m}/${dd} ${hh}:${mn}`;
     }
 
-    /** 6) Save current as (create or overwrite by name) */
-    function __saveCurrentProfile(){
+    // Save profile (includes deficits)
+    function saveProfile(){
       const name = clientName.value.trim();
-      if(!name){
-        alert('請先輸入客戶姓名再儲存。');
-        clientName.focus();
-        return;
-      }
-      const profiles = __loadProfiles();
+      if(!name){ alert('請先輸入客戶姓名再儲存。'); clientName.focus(); return; }
+
+      const profiles = loadProfiles();
       const idx = profiles.findIndex(p => p.name === name);
+
       const profile = {
         id: idx >= 0 ? profiles[idx].id : `p_${Date.now()}`,
         name,
-        state: __readCurrentState(),
-        savedAt: __formatDT()
+        state: readState(),
+        amounts: readAmounts(),
+        currencies: readCurrencies(),
+        deficits: readDeficits(),
+        savedAt: formatDT()
       };
-      if(idx >= 0){
-        profiles[idx] = profile; // overwrite
-      } else {
-        profiles.unshift(profile); // newest first
-      }
-      __storeProfiles(profiles);
+
+      if(idx >= 0) profiles[idx] = profile; else profiles.unshift(profile);
+      storeProfiles(profiles);
       localStorage.setItem(KEY_NAME, name);
-      __renderClientList();
+      renderClientList();
     }
 
-    /** 7) Load / Delete handlers */
-    function __loadProfileById(id){
-      const profiles = __loadProfiles();
+    // Load / Delete
+    function loadProfileById(id){
+      const profiles = loadProfiles();
       const p = profiles.find(x => x.id === id);
       if(!p) return;
+
       clientName.value = p.name;
       localStorage.setItem(KEY_NAME, p.name);
       syncNameMirror();
-      __applyState(p.state);
+
+      applyState(p.state || {});
+      applyAmounts(p.amounts || {});
+      applyCurrencies(p.currencies || {});
+      applyDeficits(p.deficits || {});
+
       document.body.classList.remove('sidebar-open');
-      __toggle.setAttribute('aria-expanded', 'false');
-      __sidebar.setAttribute('aria-hidden', 'true');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      sidebar.setAttribute('aria-hidden', 'true');
     }
-    function __deleteProfile(id){
-      const profiles = __loadProfiles().filter(p => p.id !== id);
-      __storeProfiles(profiles);
-      __renderClientList();
+    function deleteProfile(id){
+      const profiles = loadProfiles().filter(p => p.id !== id);
+      storeProfiles(profiles);
+      renderClientList();
     }
 
-    /** 8) Render sidebar list + search */
-    function __renderClientList(filterText = ''){
+    // Sidebar render
+    function renderClientList(filterText = ''){
       const listEl = document.getElementById('clientList');
       const emptyEl = document.getElementById('clientEmpty');
-      const profiles = __loadProfiles();
+      const profiles = loadProfiles();
       const q = filterText.trim().toLowerCase();
       const filtered = q ? profiles.filter(p => p.name.toLowerCase().includes(q)) : profiles;
 
       listEl.innerHTML = '';
-      if(filtered.length === 0){
-        emptyEl.style.display = 'block';
-        return;
-      }
-      emptyEl.style.display = 'none';
+      emptyEl.style.display = filtered.length ? 'none' : 'block';
 
       filtered.forEach(p => {
         const li = document.createElement('li');
@@ -764,45 +849,37 @@
           <div class="actions">
             <button class="btn-xs load">載入</button>
             <button class="btn-xs del" title="刪除">刪除</button>
-          </div>
-        `;
-        li.querySelector('.load').addEventListener('click', () => __loadProfileById(p.id));
+          </div>`;
+        li.querySelector('.load').addEventListener('click', () => loadProfileById(p.id));
         li.querySelector('.del').addEventListener('click', () => {
-          if(confirm(`確定刪除「${p.name}」的資料？`)){
-            __deleteProfile(p.id);
-          }
+          if(confirm(`確定刪除「${p.name}」的資料？`)){ deleteProfile(p.id); }
         });
         listEl.appendChild(li);
       });
     }
 
-    /** 9) Wire up Save + Search + initial render */
-    saveBtn.addEventListener('click', __saveCurrentProfile);
-    __sidebar.querySelector('.search').addEventListener('input', (e) => {
-      __renderClientList(e.target.value);
-    });
-    __renderClientList();
+    saveBtn.addEventListener('click', saveProfile);
+    sidebar.querySelector('.search').addEventListener('input', (e) => renderClientList(e.target.value));
+    renderClientList();
 
-    /** 10) Quality-of-life: close sidebar before exporting (capture-phase) & Esc key */
-    const __closeSidebar = () => {
+    // Close sidebar before export & Esc
+    const closeSidebar = () => {
       if (document.body.classList.contains('sidebar-open')) {
         document.body.classList.remove('sidebar-open');
-        __toggle.setAttribute('aria-expanded', 'false');
-        __sidebar.setAttribute('aria-hidden', 'true');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        sidebar.setAttribute('aria-hidden', 'true');
       }
     };
-    // Ensure sidebar is closed BEFORE your original PNG/PDF handlers run
-    pngBtn.addEventListener('click', __closeSidebar, true);
-    pdfBtn.addEventListener('click', __closeSidebar, true);
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') __closeSidebar();
-    });
-
+    pngBtn.addEventListener('click', closeSidebar, true);
+    pdfBtn.addEventListener('click', closeSidebar, true);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
   });
 </script>
 </body>
 </html>
+
+
+
 
 
 
