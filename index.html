@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -118,7 +117,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 12px; /* default will be overridden below to 4px (Option C) */
+    gap: 12px; /* default overridden below to 4px (Option C) */
   }
 
   .title-icon {
@@ -126,7 +125,7 @@
     height: 68px;
     display: inline-block;
     margin: 0;
-    margin-top: 12px;              /* slight baseline alignment tweak */
+    margin-top: -2px;              /* slight baseline alignment tweak */
     flex: 0 0 auto;
   }
   .title-icon svg { display: block; width: 68px; height: 68px; }
@@ -474,25 +473,19 @@
       localStorage.setItem(KEY, JSON.stringify(state));
     }
 
-    
+    // CLEAR: also clear client name & saved name
     clearBtn.addEventListener('click', () => {
-      // 1) Clear all card selections (existing behavior)
       [...form.querySelectorAll('.card')].forEach(card => {
         const input = card.querySelector('.check');
         input.checked = false;
         card.classList.remove('checked');
       });
-      persist(); // keep fp_checklist_v1 in sync — now all false
-
-      // 2) Clear the client name input and its saved localStorage value
+      persist();
       clientName.value = '';
-      localStorage.removeItem(KEY_NAME); // removes 'fp_client_name'
-      syncNameMirror(); // update export-only mirror to placeholder
-
-      // Optional: put the cursor back to the name box so you can type right away
+      localStorage.removeItem(KEY_NAME);
+      syncNameMirror();
       clientName.focus();
     });
-
 
     // Toggle export mode: hide input, show mirror (so it captures cleanly)
     async function captureWithExporting(fn){
@@ -573,7 +566,7 @@
 
     /* === Sidebar (hidden by default) + Save Profiles — additive === */
 
-    /** 1) Inject CSS: off-canvas by default, slide-in when body.sidebar-open is set */
+    /** 1) Inject CSS: off-canvas by default, toggle button moves to top-right on mobile (Option 2) */
     const __sidebarCSS = `
     /* Sidebar shell: hidden off-canvas by default */
     .client-sidebar {
@@ -605,15 +598,23 @@
     }
     .client-empty { padding: 10px 8px; color:#5f6368; font-size: 12px; }
 
-    /* Toggle button: always visible */
+    /* Toggle button: default top-left, with safe-area insets */
     .sidebar-toggle {
-      position: fixed; left: 10px; top: 10px; z-index: 10;
+      position: fixed;
+      left: max(10px, env(safe-area-inset-left, 0px) + 10px);
+      top:  max(10px, env(safe-area-inset-top, 0px) + 10px);
+      z-index: 10;
       border: 1px solid #cfd6e7; background:#fff; padding:8px 12px; border-radius:8px;
       font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
     }
 
-    /* Narrow screens: make the drawer a bit wider visually */
+    /* Option 2: On mobile, move toggle to top-right (avoid overlapping name field) */
     @media (max-width: 480px) {
+      .sidebar-toggle {
+        left: auto;
+        right: max(10px, env(safe-area-inset-right, 0px) + 10px);
+        top:  max(10px, env(safe-area-inset-top, 0px) + 10px);
+      }
       .client-sidebar { width: 85vw; }
     }
     `;
@@ -647,13 +648,14 @@
     });
     document.body.appendChild(__toggle);
 
-    /** 4) Add a "Save" button next to your export buttons (no HTML edits needed) */
+    /** 4) Add a "Save" button next to your export buttons (as 2nd from left) */
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn';
     saveBtn.type = 'button';
     saveBtn.id = 'saveBtn';
     saveBtn.textContent = '儲存資料';
-    pngBtn.insertAdjacentElement('beforebegin', saveBtn); // place before "導出 PNG"
+    // Insert before PNG button → order: 清除選擇 | 儲存資料 | 導出 PNG | 導出 PDF
+    pngBtn.insertAdjacentElement('beforebegin', saveBtn);
 
     /** 5) Profiles storage helpers */
     const PROFILES_KEY = 'fp_profiles_v1';
@@ -801,6 +803,7 @@
 </script>
 </body>
 </html>
+
 
 
 
