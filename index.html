@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -117,7 +118,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 12px; /* default will be overridden below to 4px (Option C) */
   }
 
   .title-icon {
@@ -144,11 +145,9 @@
     color: var(--muted);
     font-size: 14px;
   }
-  
-  /* Option C: bring icon + title closer */
-  .title-group {
-  gap: 4px;   /* tighter spacing */
-  }
+
+  /* >>> Option C: bring icon + title closer (very tight) */
+  .title-group { gap: 4px; }
 
   /* >>> Option A: nudge the title text up to align with icon */
   .title-group .main-title {
@@ -316,7 +315,7 @@
             <h1 class="main-title">財策劃專業服務跟進</h1>
           </div>
 
-          <p class="subtitle-title">請選擇你關注的項目（點擊卡片即可勾選／取消）</p>
+          <p class="subtitle-title">請選擇您關注的項目（點擊卡片即可勾選／取消）</p>
         </div>
 
         <!-- Grid (desktop default 3 x 2), switches per media queries -->
@@ -475,14 +474,25 @@
       localStorage.setItem(KEY, JSON.stringify(state));
     }
 
+    
     clearBtn.addEventListener('click', () => {
+      // 1) Clear all card selections (existing behavior)
       [...form.querySelectorAll('.card')].forEach(card => {
         const input = card.querySelector('.check');
         input.checked = false;
         card.classList.remove('checked');
       });
-      persist();
+      persist(); // keep fp_checklist_v1 in sync — now all false
+
+      // 2) Clear the client name input and its saved localStorage value
+      clientName.value = '';
+      localStorage.removeItem(KEY_NAME); // removes 'fp_client_name'
+      syncNameMirror(); // update export-only mirror to placeholder
+
+      // Optional: put the cursor back to the name box so you can type right away
+      clientName.focus();
     });
+
 
     // Toggle export mode: hide input, show mirror (so it captures cleanly)
     async function captureWithExporting(fn){
@@ -560,11 +570,239 @@
         pdf.save(`${safeFilename(client)}_${yyyymmdd}.pdf`);
       });
     });
+
+    /* === Sidebar (hidden by default) + Save Profiles — additive === */
+
+    /** 1) Inject CSS: off-canvas by default, slide-in when body.sidebar-open is set */
+    const __sidebarCSS = `
+    /* Sidebar shell: hidden off-canvas by default */
+    .client-sidebar {
+      position: fixed; inset: 0 auto 0 0; width: 260px;
+      background: #ffffff; border-right: 1px solid #e8eaf3;
+      padding: 16px 12px; overflow: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,.06);
+      transform: translateX(-100%); transition: transform .2s ease;
+      z-index: 9;
+    }
+    body.sidebar-open .client-sidebar { transform: translateX(0); }
+
+    .client-sidebar h2 { margin: 4px 8px 8px; font-size: 14px; letter-spacing: .5px; color:#1f2a3a; }
+    .client-sidebar .search {
+      width:100%; padding:8px 10px; border:1px solid #cfd6e7; border-radius:8px; margin: 8px 6px 12px; font-size: 13px;
+    }
+    .client-list { list-style: none; margin: 0; padding: 0 6px; display: grid; gap: 8px; }
+    .client-item {
+      border: 1px solid #e0e3eb; border-radius:10px; padding: 10px; background:#fff;
+      display:flex; align-items: center; justify-content: space-between; gap:8px;
+    }
+    .client-item .meta { display:flex; flex-direction: column; min-width: 0; }
+    .client-item .name { font-weight: 700; font-size: 14px; color:#1f2a3a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .client-item .date { font-size: 12px; color:#5f6368; }
+    .client-item .actions { display:flex; gap:6px; }
+    .client-item .btn-xs {
+      border:1px solid #cfd6e7; background:#fff; color:#1a2a3a;
+      padding:4px 8px; border-radius: 8px; font-size:12px; cursor:pointer;
+    }
+    .client-empty { padding: 10px 8px; color:#5f6368; font-size: 12px; }
+
+    /* Toggle button: always visible */
+    .sidebar-toggle {
+      position: fixed; left: 10px; top: 10px; z-index: 10;
+      border: 1px solid #cfd6e7; background:#fff; padding:8px 12px; border-radius:8px;
+      font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    }
+
+    /* Narrow screens: make the drawer a bit wider visually */
+    @media (max-width: 480px) {
+      .client-sidebar { width: 85vw; }
+    }
+    `;
+    const __styleEl = document.createElement('style');
+    __styleEl.textContent = __sidebarCSS;
+    document.head.appendChild(__styleEl);
+
+    /** 2) Build the sidebar (outside export area so it never gets captured) */
+    const __sidebar = document.createElement('aside');
+    __sidebar.className = 'client-sidebar';
+    __sidebar.setAttribute('aria-hidden', 'true');
+    __sidebar.innerHTML = `
+      <h2>客戶列表</h2>
+      <input type="search" class="search" placeholder="搜尋姓名…" aria-label="搜尋姓名" />
+      <ul class="client-list" id="clientList"></ul>
+      <div class="client-empty" id="clientEmpty" style="display:none;">尚未儲存任何客戶。</div>
+    `;
+    document.body.appendChild(__sidebar);
+
+    /** 3) Toggle button (always visible) */
+    const __toggle = document.createElement('button');
+    __toggle.className = 'sidebar-toggle';
+    __toggle.type = 'button';
+    __toggle.setAttribute('aria-expanded', 'false');
+    __toggle.setAttribute('aria-controls', 'clientList');
+    __toggle.innerHTML = '☰ 客戶';
+    __toggle.addEventListener('click', () => {
+      const open = document.body.classList.toggle('sidebar-open');
+      __toggle.setAttribute('aria-expanded', String(open));
+      __sidebar.setAttribute('aria-hidden', String(!open));
+    });
+    document.body.appendChild(__toggle);
+
+    /** 4) Add a "Save" button next to your export buttons (no HTML edits needed) */
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn';
+    saveBtn.type = 'button';
+    saveBtn.id = 'saveBtn';
+    saveBtn.textContent = '儲存資料';
+    pngBtn.insertAdjacentElement('beforebegin', saveBtn); // place before "導出 PNG"
+
+    /** 5) Profiles storage helpers */
+    const PROFILES_KEY = 'fp_profiles_v1';
+
+    function __loadProfiles(){
+      try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; }
+      catch(e){ return []; }
+    }
+    function __storeProfiles(list){
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(list));
+    }
+    function __readCurrentState(){
+      const state = {};
+      [...form.querySelectorAll('.card')].forEach(card => {
+        const id = card.dataset.id;
+        const input = card.querySelector('.check');
+        state[id] = !!input.checked;
+      });
+      return state;
+    }
+    function __applyState(state){
+      [...form.querySelectorAll('.card')].forEach(card => {
+        const id = card.dataset.id;
+        const input = card.querySelector('.check');
+        const checked = !!state[id];
+        input.checked = checked;
+        card.classList.toggle('checked', checked);
+      });
+      // Keep your original localStorage KEY in sync
+      persist();
+    }
+    function __formatDT(d = new Date()){
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+      const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+      return `${y}/${m}/${dd} ${hh}:${mm}`;
+    }
+
+    /** 6) Save current as (create or overwrite by name) */
+    function __saveCurrentProfile(){
+      const name = clientName.value.trim();
+      if(!name){
+        alert('請先輸入客戶姓名再儲存。');
+        clientName.focus();
+        return;
+      }
+      const profiles = __loadProfiles();
+      const idx = profiles.findIndex(p => p.name === name);
+      const profile = {
+        id: idx >= 0 ? profiles[idx].id : `p_${Date.now()}`,
+        name,
+        state: __readCurrentState(),
+        savedAt: __formatDT()
+      };
+      if(idx >= 0){
+        profiles[idx] = profile; // overwrite
+      } else {
+        profiles.unshift(profile); // newest first
+      }
+      __storeProfiles(profiles);
+      localStorage.setItem(KEY_NAME, name);
+      __renderClientList();
+    }
+
+    /** 7) Load / Delete handlers */
+    function __loadProfileById(id){
+      const profiles = __loadProfiles();
+      const p = profiles.find(x => x.id === id);
+      if(!p) return;
+      clientName.value = p.name;
+      localStorage.setItem(KEY_NAME, p.name);
+      syncNameMirror();
+      __applyState(p.state);
+      document.body.classList.remove('sidebar-open');
+      __toggle.setAttribute('aria-expanded', 'false');
+      __sidebar.setAttribute('aria-hidden', 'true');
+    }
+    function __deleteProfile(id){
+      const profiles = __loadProfiles().filter(p => p.id !== id);
+      __storeProfiles(profiles);
+      __renderClientList();
+    }
+
+    /** 8) Render sidebar list + search */
+    function __renderClientList(filterText = ''){
+      const listEl = document.getElementById('clientList');
+      const emptyEl = document.getElementById('clientEmpty');
+      const profiles = __loadProfiles();
+      const q = filterText.trim().toLowerCase();
+      const filtered = q ? profiles.filter(p => p.name.toLowerCase().includes(q)) : profiles;
+
+      listEl.innerHTML = '';
+      if(filtered.length === 0){
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      filtered.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'client-item';
+        li.innerHTML = `
+          <div class="meta">
+            <div class="name" title="${p.name}">${p.name}</div>
+            <div class="date">上次儲存：${p.savedAt}</div>
+          </div>
+          <div class="actions">
+            <button class="btn-xs load">載入</button>
+            <button class="btn-xs del" title="刪除">刪除</button>
+          </div>
+        `;
+        li.querySelector('.load').addEventListener('click', () => __loadProfileById(p.id));
+        li.querySelector('.del').addEventListener('click', () => {
+          if(confirm(`確定刪除「${p.name}」的資料？`)){
+            __deleteProfile(p.id);
+          }
+        });
+        listEl.appendChild(li);
+      });
+    }
+
+    /** 9) Wire up Save + Search + initial render */
+    saveBtn.addEventListener('click', __saveCurrentProfile);
+    __sidebar.querySelector('.search').addEventListener('input', (e) => {
+      __renderClientList(e.target.value);
+    });
+    __renderClientList();
+
+    /** 10) Quality-of-life: close sidebar before exporting (capture-phase) & Esc key */
+    const __closeSidebar = () => {
+      if (document.body.classList.contains('sidebar-open')) {
+        document.body.classList.remove('sidebar-open');
+        __toggle.setAttribute('aria-expanded', 'false');
+        __sidebar.setAttribute('aria-hidden', 'true');
+      }
+    };
+    // Ensure sidebar is closed BEFORE your original PNG/PDF handlers run
+    pngBtn.addEventListener('click', __closeSidebar, true);
+    pdfBtn.addEventListener('click', __closeSidebar, true);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') __closeSidebar();
+    });
+
   });
 </script>
 </body>
 </html>
-``
+
+
 
 
 
