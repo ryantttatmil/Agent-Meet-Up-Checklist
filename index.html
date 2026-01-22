@@ -61,6 +61,36 @@
   }
   .name-field label { color: #1f2a3a; }
 
+  /* Field pairs (label + input/select) stick together */
+  .field-pair{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .field-pair > label{
+    white-space: nowrap;
+    flex: 0 0 auto;
+    line-height: 1.2;
+  }
+  .name-input,
+  .age-input,
+  .gender-select,
+  .name-mirror,
+  .age-mirror,
+  .gender-mirror{
+    min-width: 0;
+  }
+
+  /* Toggle slot */
+  .toggle-slot{
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
   /* Inputs (Name/Age/Gender share same base style) */
   .name-input,
   .age-input,
@@ -72,16 +102,9 @@
     background: #fff;
   }
 
-  .name-input {
-    flex: 1 1 auto;
-    max-width: 320px;
-  }
-  .age-input{
-    width: 96px;
-  }
-  .gender-select{
-    width: 150px;
-  }
+  .name-input { flex: 1 1 auto; max-width: 320px; }
+  .age-input{ width: 96px; }
+  .gender-select{ width: 150px; }
 
   /* Mirrors (export only) */
   .name-mirror,
@@ -112,20 +135,48 @@
   .exporting .age-input,
   .exporting .gender-select { display: none !important; }
 
-  .date-field {
+  /* Date field plain text style (not a box) */
+  .date-field{
     font-size: 14px;
     color: #1f2a3a;
     font-weight: 700;
-    padding: 8px 10px;
-    border: 1px solid #cfd6e7;
-    border-radius: 8px;
-    background: #fff;
-    min-width: 140px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    min-width: 0;
     text-align: right;
     white-space: nowrap;
   }
 
-  /* ===== Header / Title (ICON + TEXT centered as a unit) ===== */
+  .info-right{
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  /* Toggle button styling */
+  .sidebar-toggle-inline{
+    border: 1px solid #cfd6e7;
+    background: #fff;
+    color: #1a2a3a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sidebar-toggle-inline:hover{
+    border-color: #c6d2f7;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  }
+
+  /* ===== Header / Title ===== */
   .title-box {
     background: linear-gradient(135deg, #ffe9f0, #e8f0fe);
     border: 1px solid #d7deed;
@@ -144,7 +195,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px; /* tight */
+    gap: 4px;
   }
 
   .title-icon { width: 68px; height: 68px; margin-top: 12px; flex: 0 0 auto; }
@@ -164,8 +215,23 @@
 
   .subtitle-title { margin: 0; color: var(--muted); font-size: 14px; }
 
-  /* Grid: default desktop = 3 columns */
+  /* ===== Grid (CLEAN, CONSISTENT) ===== */
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+  /* Tablet: 2 cols */
+  @media (min-width: 481px) and (max-width: 1024px){
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Mobile portrait: 1 col */
+  @media (max-width: 480px) and (orientation: portrait){
+    .grid { grid-template-columns: 1fr; gap: 22px; }
+  }
+
+  /* Mobile landscape fix: use max-height (landscape width is usually > 480) */
+  @media (max-height: 480px) and (orientation: landscape){
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  }
 
   /* Card */
   .card {
@@ -186,7 +252,6 @@
 
     max-width: 100%;
     overflow: hidden;
-    box-sizing: border-box;
   }
   .card:hover { border-color: #c6d2f7; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
   .card.checked { border-color: var(--brand); background: var(--checked); box-shadow: 0 6px 16px rgba(26,115,232,.12); }
@@ -223,8 +288,16 @@
   }
   .card.checked .tick { opacity: 1; transform: translateY(0); }
 
+  /* Prevent ✓ badge from covering text */
+  .card .title,
+  .card .subtitle,
+  .card .footer{
+    padding-right: 78px;
+    box-sizing: border-box;
+  }
+
   .note { margin-top: 14px; color: var(--muted); font-size: 12px; text-align: center; }
-  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
   .btn { border: 1px solid #cfd6e7; background: #fff; color: #1a2a3a; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
   .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 
@@ -262,50 +335,154 @@
   .money .money-field {
     display: flex; align-items: center; gap: 8px;
     border: 1px solid #cfd6e7; border-radius: 8px; padding: 6px 8px; background: #fff;
-    width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box;
+    width: 100%; max-width: 100%; min-width: 0;
   }
   .money .currency-select {
     border: 1px solid #cfd6e7; border-radius: 6px; padding: 4px 8px; font-size: 12px; background: #fff; color: #1a2a3a;
     flex: 0 0 auto; max-width: 30%;
   }
-  .money .money-input { flex: 1 1 auto; min-width: 0; width: 100%; border: 0; outline: none; font-size: 14px; box-sizing: border-box; }
+  .money .money-input { flex: 1 1 auto; min-width: 0; width: 100%; border: 0; outline: none; font-size: 14px; }
 
-  .money, .money * { pointer-events: auto; } /* allow inputs inside label */
+  .money, .money * { pointer-events: auto; }
 
   /* Containment guards */
   .wrap, .export-frame, .grid { max-width: 100%; overflow-x: hidden; }
 
-  @media (max-width: 480px) and (orientation: portrait) {
-    .card {
-      grid-template-columns: 56px minmax(0, 1fr);
-      padding: 12px; min-height: 140px;
-    }
-    .icon { width: 56px; height: 56px; }
-    .icon .emoji { font-size: 24px; }
-  }
-
-  /* ===== Mobile grid rules ===== */
+  /* Small card tweak */
   @media (max-width: 480px) and (orientation: portrait) {
     body { padding: 16px 12px 28px; }
     .export-frame { padding: 16px; border-radius: 10px; }
-    .info-bar { grid-template-columns: 1fr; row-gap: 8px; }
-    .date-field { justify-self: start; }
-    .name-field { gap: 6px; }
 
-    .name-input { max-width: 100%; width: 100%; }
-    .age-input { width: 100px; }
-    .gender-select { width: 160px; }
+    .info-bar{ grid-template-columns: 1fr auto; align-items: start; gap: 10px; }
+    .date-field{ justify-self: end; text-align: right; min-width: 0; padding: 0; font-size: 13px; }
+
+    .sidebar-toggle-inline{ padding: 7px 10px; font-size: 13px; }
+
+    .name-field{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 10px;
+      align-items: start;
+      width: 100%;
+    }
+    .name-field .toggle-slot{ grid-column: 1 / -1; }
+    .name-field .field-pair:first-of-type{ grid-column: 1 / -1; }
+
+    .field-pair{
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      width: 100%;
+    }
+    .field-pair > label{ font-size: 13px; }
+
+    .name-input,
+    .age-input,
+    .gender-select{
+      width: 100%;
+      max-width: 100%;
+      font-size: 13px;
+      padding: 6px 10px;
+      height: 36px;
+      border-radius: 8px;
+    }
 
     .title-box { gap: 8px; padding: 14px 12px; }
     .title-icon { width: 54px; height: 54px; margin-top: 12px; }
     .title-icon svg { width: 54px; height: 54px; }
     .main-title { font-size: 20px; line-height: 1.25; }
     .subtitle-title { font-size: 13px; }
-    .grid { grid-template-columns: 1fr; gap: 22px; }
+
+    .card { grid-template-columns: 56px minmax(0, 1fr); padding: 12px; min-height: 140px; }
+    .icon { width: 56px; height: 56px; }
+    .icon .emoji { font-size: 24px; }
+
     [data-id="retirement-risk"] .icon .emoji { font-size: 22px !important; letter-spacing: -6px; line-height: 1; }
   }
-  @media (max-width: 480px) and (orientation: landscape) { .grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+
+/* === Tablet "awkward ratio" fix: move text under icon (ONLY this range) ===
+   Targets widths like ~500–820 and shorter height (split view / small tablet landscape).
+   Does NOT affect mobile portrait (<=480) or desktop (>=1025). */
+@media (min-width: 478px) and (max-width: 820px) and (max-height: 600px) {
+  .card{
+    /* change internal layout from 2-column to stacked */
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr auto; 
+    grid-template-areas:
+      "icon"
+      "title"
+      "subtitle"
+      "footer"
+      "money";
+    row-gap: 8px;
+  }
+
+  /* center icon (optional, looks nicer) */
+  .card .icon{
+    justify-self: start; /* keep left aligned like your design */
+    /* or: justify-self: center; */
+  }
+
+  /* remove the reserved space for the ✓ badge so text can use full width */
+  .card .title,
+  .card .subtitle,
+  .card .footer{
+    padding-right: 0;
+  }
+
+  /* keep the ✓ badge at top-right */
+  .card .tick{
+    top: 10px;
+    right: 10px;
+  }
+
+  /* make money section sit nicely at bottom */
+  .card .money{
+    grid-column: 1 / -1;
+  }
+}
+
+
+  /* Mobile landscape FIX: use max-height so it actually applies */
+  @media (max-height: 480px) and (orientation: landscape){
+    body { padding: 14px 12px 22px; }
+    .export-frame { padding: 16px; border-radius: 10px; }
+    .info-bar{ grid-template-columns: 1fr auto; align-items: start; gap: 10px; }
+    .date-field{ justify-self: end; text-align: right; min-width: 0; padding: 0; font-size: 13px; }
+    .sidebar-toggle-inline{ padding: 7px 10px; font-size: 13px; }
+
+    .name-field{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 10px;
+      align-items: start;
+      width: 100%;
+    }
+    .name-field .toggle-slot{ grid-column: 1 / -1; }
+    .name-field .field-pair:first-of-type{ grid-column: 1 / -1; }
+
+    .field-pair{
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      width: 100%;
+    }
+    .field-pair > label{ font-size: 13px; }
+
+    .name-input,
+    .age-input,
+    .gender-select{
+      width: 100%;
+      max-width: 100%;
+      font-size: 13px;
+      padding: 6px 10px;
+      height: 36px;
+      border-radius: 8px;
+    }
+  }
 </style>
 </head>
 
@@ -317,28 +494,41 @@
         <!-- Name + Date bar -->
         <div class="info-bar">
           <div class="name-field">
-            <label for="clientName">客戶姓名：</label>
-            <span id="nameMirror" class="name-mirror placeholder">（請輸入姓名）</span>
-            <input id="clientName" class="name-input" type="text" placeholder="請輸入姓名" />
+            <!-- Toggle slot -->
+            <div class="toggle-slot"></div>
 
-            <!-- ✅ NEW: Age -->
-            <label for="clientAge">年齡：</label>
-            <span id="ageMirror" class="age-mirror placeholder">（—）</span>
-            <input id="clientAge" class="age-input" type="number" min="0" max="120" inputmode="numeric" placeholder="例：35" />
+            <!-- Pair 1: Name -->
+            <div class="field-pair">
+              <label for="clientName">客戶姓名：</label>
+              <span id="nameMirror" class="name-mirror placeholder">（請輸入姓名）</span>
+              <input id="clientName" class="name-input" type="text" placeholder="請輸入姓名" />
+            </div>
 
-            <!-- ✅ NEW: Gender -->
-            <label for="clientGender">性別：</label>
-            <span id="genderMirror" class="gender-mirror placeholder">（請選擇）</span>
-            <select id="clientGender" class="gender-select">
-              <option value="" selected disabled>請選擇</option>
-              <option value="男">男</option>
-              <option value="女">女</option>
-              <option value="其他">其他</option>
-              <option value="不願透露">不願透露</option>
-            </select>
+            <!-- Pair 2: Age -->
+            <div class="field-pair">
+              <label for="clientAge">年齡：</label>
+              <span id="ageMirror" class="age-mirror placeholder">（—）</span>
+              <input id="clientAge" class="age-input" type="number" min="0" max="120" inputmode="numeric" placeholder="例：35" />
+            </div>
+
+            <!-- Pair 3: Gender -->
+            <div class="field-pair">
+              <label for="clientGender">性別：</label>
+              <span id="genderMirror" class="gender-mirror placeholder">（請選擇）</span>
+              <select id="clientGender" class="gender-select">
+                <option value="" selected disabled>請選擇</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="其他">其他</option>
+                <option value="不願透露">不願透露</option>
+              </select>
+            </div>
           </div>
 
-          <div id="todayDate" class="date-field">—</div>
+          <!-- Right side: Date -->
+          <div class="info-right">
+            <div id="todayDate" class="date-field">—</div>
+          </div>
         </div>
 
         <!-- Title -->
@@ -354,7 +544,7 @@
                 <line x1="26" y1="36" x2="15" y2="47" stroke="var(--lens-stroke)" stroke-width="5" stroke-linecap="round"/>
               </svg>
             </div>
-            <h1 class="main-title">財策劃專業服務跟進</h1>
+            <h1 class="main-title">理財策劃專業服務跟進</h1>
           </div>
           <p class="subtitle-title">請選擇您關注的項目（點擊卡片即可勾選／取消）</p>
         </div>
@@ -541,7 +731,6 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <script>
-  // Wait until DOM and external libraries are ready
   window.addEventListener('load', () => {
     const form = document.getElementById('checklist');
     const exportFrame = document.getElementById('exportFrame');
@@ -552,7 +741,6 @@
     const clientName = document.getElementById('clientName');
     const nameMirror = document.getElementById('nameMirror');
 
-    // ✅ NEW: Age + Gender
     const clientAge = document.getElementById('clientAge');
     const ageMirror = document.getElementById('ageMirror');
     const clientGender = document.getElementById('clientGender');
@@ -562,10 +750,13 @@
 
     const KEY = 'fp_checklist_v1';
     const KEY_NAME = 'fp_client_name';
-
-    // ✅ NEW keys
     const KEY_AGE = 'fp_client_age';
     const KEY_GENDER = 'fp_client_gender';
+
+    // ✅ NEW: Auto-save money/currency/deficit
+    const KEY_AMOUNTS = 'fp_amounts_v1';
+    const KEY_CURRENCIES = 'fp_currencies_v1';
+    const KEY_DEFICITS = 'fp_deficits_v1';
 
     const SCALE = 2;
 
@@ -590,15 +781,13 @@
       else { nameMirror.textContent = '（請輸入姓名）'; nameMirror.classList.add('placeholder'); }
     }
 
-    // ===== ✅ Age restore + mirror =====
+    // ===== Age restore + mirror =====
     clientAge.value = localStorage.getItem(KEY_AGE) || '';
     syncAgeMirror();
     clientAge.addEventListener('input', () => {
-      // keep digits only + clamp 0-120 (soft clamp)
       const raw = String(clientAge.value || '').replace(/[^\d]/g, '');
       let num = raw === '' ? '' : Math.max(0, Math.min(120, parseInt(raw, 10)));
       clientAge.value = (num === '' ? '' : String(num));
-
       localStorage.setItem(KEY_AGE, clientAge.value);
       syncAgeMirror();
     });
@@ -608,12 +797,9 @@
       else { ageMirror.textContent = '（—）'; ageMirror.classList.add('placeholder'); }
     }
 
-    // ===== ✅ Gender restore + mirror =====
+    // ===== Gender restore + mirror =====
     const savedGender = localStorage.getItem(KEY_GENDER) || '';
-    if (savedGender) {
-      // try set value if exists in options
-      clientGender.value = savedGender;
-    }
+    if (savedGender) clientGender.value = savedGender;
     syncGenderMirror();
     clientGender.addEventListener('change', () => {
       localStorage.setItem(KEY_GENDER, clientGender.value || '');
@@ -629,7 +815,7 @@
     if (typeof window.html2canvas !== 'function') { alert('html2canvas 載入失敗，請檢查網絡或 CDN。'); return; }
     if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') { alert('jsPDF 載入失敗，請檢查網絡或 CDN。'); return; }
 
-    // Restore quick checkbox state
+    // Restore checkbox state
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     [...form.querySelectorAll('.card')].forEach(card => {
       const id = card.dataset.id;
@@ -639,10 +825,10 @@
       card.classList.toggle('checked', isChecked);
       input.addEventListener('change', () => {
         card.classList.toggle('checked', input.checked);
-        persist();
+        persistChecks();
       });
     });
-    function persist(){
+    function persistChecks(){
       const state = {};
       [...form.querySelectorAll('.card')].forEach(card => {
         const id = card.dataset.id;
@@ -653,7 +839,8 @@
     }
 
     /* ============================
-       Money + Currency + Deficit (不足！)
+       Money + Currency + Deficit
+       + ✅ Auto-save on change
        ============================ */
     const MONEY_INPUTS = new Map(); // id -> { input, box, toggle, currencySelect, deficitBtn, card }
 
@@ -671,26 +858,42 @@
 
         if(!box || !toggleBtn || !input || !currencySelect || !deficitBtn) return;
 
-        // Prevent label toggle while interacting
         const stopOnly = (e) => { e.stopPropagation(); };
-        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); box.classList.toggle('open'); });
+
+        // ✅ Prevent label default from toggling checkbox
+        toggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          box.classList.toggle('open');
+        });
+
         input.addEventListener('click', stopOnly);
         currencySelect.addEventListener('click', stopOnly);
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } e.stopPropagation(); });
 
-        // Sanitize input
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+          e.stopPropagation();
+        });
+
         input.addEventListener('input', () => {
           const v = input.value.replace(/[^\d.]/g, '');
           const parts = v.split('.');
           input.value = parts.length > 2 ? (parts[0] + '.' + parts.slice(1).join('')) : v;
+          persistAmounts(); // ✅ auto-save
         });
 
-        // 不足！ toggle
+        currencySelect.addEventListener('change', (e) => {
+          e.stopPropagation();
+          persistCurrencies(); // ✅ auto-save
+        });
+
         deficitBtn.addEventListener('click', (e) => {
+          e.preventDefault(); // ✅ prevent label toggling checkbox
           e.stopPropagation();
           const next = deficitBtn.getAttribute('aria-pressed') !== 'true';
           deficitBtn.setAttribute('aria-pressed', String(next));
           card.classList.toggle('deficit', next);
+          persistDeficits(); // ✅ auto-save
         });
 
         MONEY_INPUTS.set(id, { input, box, toggle: toggleBtn, currencySelect, deficitBtn, card });
@@ -706,20 +909,29 @@
     function applyCurrencies(currencies = {}){ MONEY_INPUTS.forEach((r,id)=>{ r.currencySelect.value = currencies[id] || 'HKD'; }); }
     function applyDeficits(deficits = {}){ MONEY_INPUTS.forEach((r,id)=>{ const on=!!deficits[id]; r.card.classList.toggle('deficit', on); r.deficitBtn.setAttribute('aria-pressed', String(on)); }); }
 
-    // Clear: also clear name, age, gender, money, currency, deficit
+    // ✅ NEW: persist functions
+    function persistAmounts(){ localStorage.setItem(KEY_AMOUNTS, JSON.stringify(readAmounts())); }
+    function persistCurrencies(){ localStorage.setItem(KEY_CURRENCIES, JSON.stringify(readCurrencies())); }
+    function persistDeficits(){ localStorage.setItem(KEY_DEFICITS, JSON.stringify(readDeficits())); }
+
+    // ✅ NEW: restore on load (auto-save set 2)
+    applyAmounts(JSON.parse(localStorage.getItem(KEY_AMOUNTS) || '{}'));
+    applyCurrencies(JSON.parse(localStorage.getItem(KEY_CURRENCIES) || '{}'));
+    applyDeficits(JSON.parse(localStorage.getItem(KEY_DEFICITS) || '{}'));
+
+    // Clear: also clear name, age, gender, money, currency, deficit (and their keys)
     clearBtn.addEventListener('click', () => {
       [...form.querySelectorAll('.card')].forEach(card => {
         const input = card.querySelector('.check');
         input.checked = false;
         card.classList.remove('checked', 'deficit');
       });
-      persist();
+      persistChecks();
 
       clientName.value = '';
       localStorage.removeItem(KEY_NAME);
       syncNameMirror();
 
-      // ✅ NEW clear age/gender
       clientAge.value = '';
       localStorage.removeItem(KEY_AGE);
       syncAgeMirror();
@@ -735,6 +947,11 @@
         deficitBtn.setAttribute('aria-pressed', 'false');
       });
 
+      // ✅ remove auto-save keys
+      localStorage.removeItem(KEY_AMOUNTS);
+      localStorage.removeItem(KEY_CURRENCIES);
+      localStorage.removeItem(KEY_DEFICITS);
+
       clientName.focus();
     });
 
@@ -744,8 +961,28 @@
       clientName.blur();
       clientAge.blur();
       clientGender.blur?.();
-      try { await fn(); } finally { exportFrame.classList.remove('exporting'); }
+
+      // ✅ Export improvement (3):
+      // Temporarily open money boxes where amount OR deficit exists
+      const prevOpen = {};
+      MONEY_INPUTS.forEach((r, id) => {
+        prevOpen[id] = r.box.classList.contains('open');
+        const hasAmount = (r.input.value || '').trim() !== '';
+        const isDeficit = r.card.classList.contains('deficit');
+        if (hasAmount || isDeficit) r.box.classList.add('open');
+      });
+
+      try { 
+        await fn(); 
+      } finally { 
+        // restore box state
+        MONEY_INPUTS.forEach((r, id) => {
+          r.box.classList.toggle('open', !!prevOpen[id]);
+        });
+        exportFrame.classList.remove('exporting'); 
+      }
     }
+
     function safeFilename(base){ return base.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim(); }
 
     // Export PNG
@@ -785,7 +1022,6 @@
 
     /* === Sidebar (hidden by default) + Save Profiles === */
 
-    // Inject sidebar CSS
     const __sidebarCSS = `
     .client-sidebar{
       position: fixed; inset: 0 auto 0 0; width: 260px;
@@ -796,7 +1032,54 @@
       z-index:9;
     }
     body.sidebar-open .client-sidebar{ transform:translateX(0); }
-    .client-sidebar h2{ margin:4px 8px 8px; font-size:14px; letter-spacing:.5px; color:#1f2a3a; }
+    .sidebar-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      z-index:8;
+    }
+    body.sidebar-open .sidebar-overlay{
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @media (max-width:480px){
+      .sidebar-overlay{ background: rgba(0,0,0,.35); }
+    }
+    body.sidebar-open{ overflow:hidden; }
+    .client-sidebar .sidebar-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:4px 8px 0;
+    }
+    .client-sidebar .sidebar-head h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.5px;
+      color:#1f2a3a;
+    }
+    .client-sidebar .sidebar-close{
+      border:1px solid #cfd6e7;
+      background:#fff;
+      color:#1a2a3a;
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:18px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .client-sidebar .sidebar-close:hover{
+      border-color:#c6d2f7;
+      box-shadow:0 2px 10px rgba(0,0,0,.06);
+    }
     .client-sidebar .search{ width:100%; padding:8px 10px; border:1px solid #cfd6e7; border-radius:8px; margin:8px 6px 12px; font-size:13px; }
     .client-list{ list-style:none; margin:0; padding:0 6px; display:grid; gap:8px; }
     .client-item{ border:1px solid #e0e3eb; border-radius:10px; padding:10px; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -806,48 +1089,67 @@
     .client-item .actions{ display:flex; gap:6px; }
     .client-item .btn-xs{ border:1px solid #cfd6e7; background:#fff; color:#1a2a3a; padding:4px 8px; border-radius:8px; font-size:12px; cursor:pointer; }
     .client-empty{ padding:10px 8px; color:#5f6368; font-size:12px; }
-    .sidebar-toggle{
-      position:fixed;
-      left:max(10px, env(safe-area-inset-left,0px) + 10px);
-      top:max(10px, env(safe-area-inset-top,0px) + 10px);
-      z-index:10; border:1px solid #cfd6e7; background:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-    }
     @media (max-width:480px){
-      .sidebar-toggle{
-        left:auto;
-        right:max(10px, env(safe-area-inset-right,0px) + 10px);
-        top:max(10px, env(safe-area-inset-top,0px) + 10px);
-      }
       .client-sidebar{ width:85vw; }
     }`;
-    const styleEl = document.createElement('style'); styleEl.textContent = __sidebarCSS; document.head.appendChild(styleEl);
+    const styleEl = document.createElement('style');
+    styleEl.textContent = __sidebarCSS;
+    document.head.appendChild(styleEl);
 
     // Build sidebar
     const sidebar = document.createElement('aside');
     sidebar.className = 'client-sidebar';
     sidebar.setAttribute('aria-hidden', 'true');
     sidebar.innerHTML = `
-      <h2>客戶列表</h2>
+      <div class="sidebar-head">
+        <h2>客戶列表</h2>
+        <button type="button" class="sidebar-close" aria-label="關閉側邊欄">✕</button>
+      </div>
       <input type="search" class="search" placeholder="搜尋姓名…" aria-label="搜尋姓名" />
       <ul class="client-list" id="clientList"></ul>
       <div class="client-empty" id="clientEmpty" style="display:none;">尚未儲存任何客戶。</div>`;
     document.body.appendChild(sidebar);
 
+    // Build overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(overlay);
+
     // Toggle button
     const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'sidebar-toggle';
+    toggleBtn.className = 'sidebar-toggle-inline';
     toggleBtn.type = 'button';
     toggleBtn.setAttribute('aria-expanded', 'false');
     toggleBtn.setAttribute('aria-controls', 'clientList');
     toggleBtn.textContent = '☰ 客戶';
-    toggleBtn.addEventListener('click', () => {
-      const open = document.body.classList.toggle('sidebar-open');
-      toggleBtn.setAttribute('aria-expanded', String(open));
-      sidebar.setAttribute('aria-hidden', String(!open));
-    });
-    document.body.appendChild(toggleBtn);
 
-    // Insert Save (2nd from left — before PNG)
+    const toggleSlot = document.querySelector('.toggle-slot');
+    if (toggleSlot) toggleSlot.appendChild(toggleBtn);
+
+    function openSidebar(){
+      document.body.classList.add('sidebar-open');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      sidebar.setAttribute('aria-hidden', 'false');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+    function closeSidebar(){
+      if (!document.body.classList.contains('sidebar-open')) return;
+      document.body.classList.remove('sidebar-open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      sidebar.setAttribute('aria-hidden', 'true');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      if (document.body.classList.contains('sidebar-open')) closeSidebar();
+      else openSidebar();
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+    sidebar.querySelector('.sidebar-close')?.addEventListener('click', closeSidebar);
+
+    // Insert Save button (before PNG)
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn';
     saveBtn.type = 'button';
@@ -876,7 +1178,7 @@
         const input = card.querySelector('.check');
         input.checked = on; card.classList.toggle('checked', on);
       });
-      persist();
+      persistChecks();
     }
 
     function formatDT(d = new Date()){
@@ -885,7 +1187,7 @@
       return `${y}/${m}/${dd} ${hh}:${mn}`;
     }
 
-    // Save profile (includes deficits + ✅ age/gender)
+    // Save profile
     function saveProfile(){
       const name = clientName.value.trim();
       if(!name){ alert('請先輸入客戶姓名再儲存。'); clientName.focus(); return; }
@@ -908,9 +1210,15 @@
       if(idx >= 0) profiles[idx] = profile; else profiles.unshift(profile);
       storeProfiles(profiles);
 
+      // Update top fields local storage
       localStorage.setItem(KEY_NAME, name);
       localStorage.setItem(KEY_AGE, profile.age);
       localStorage.setItem(KEY_GENDER, profile.gender);
+
+      // ✅ Also sync auto-save keys so refresh matches the latest edits
+      localStorage.setItem(KEY_AMOUNTS, JSON.stringify(profile.amounts || {}));
+      localStorage.setItem(KEY_CURRENCIES, JSON.stringify(profile.currencies || {}));
+      localStorage.setItem(KEY_DEFICITS, JSON.stringify(profile.deficits || {}));
 
       renderClientList();
     }
@@ -925,7 +1233,6 @@
       localStorage.setItem(KEY_NAME, clientName.value);
       syncNameMirror();
 
-      // ✅ NEW apply age/gender
       clientAge.value = (p.age || '');
       localStorage.setItem(KEY_AGE, clientAge.value);
       syncAgeMirror();
@@ -939,10 +1246,14 @@
       applyCurrencies(p.currencies || {});
       applyDeficits(p.deficits || {});
 
-      document.body.classList.remove('sidebar-open');
-      toggleBtn.setAttribute('aria-expanded', 'false');
-      sidebar.setAttribute('aria-hidden', 'true');
+      // ✅ Keep auto-save keys consistent with loaded profile
+      localStorage.setItem(KEY_AMOUNTS, JSON.stringify(p.amounts || {}));
+      localStorage.setItem(KEY_CURRENCIES, JSON.stringify(p.currencies || {}));
+      localStorage.setItem(KEY_DEFICITS, JSON.stringify(p.deficits || {}));
+
+      closeSidebar();
     }
+
     function deleteProfile(id){
       const profiles = loadProfiles().filter(p => p.id !== id);
       storeProfiles(profiles);
@@ -985,13 +1296,6 @@
     renderClientList();
 
     // Close sidebar before export & Esc
-    const closeSidebar = () => {
-      if (document.body.classList.contains('sidebar-open')) {
-        document.body.classList.remove('sidebar-open');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-        sidebar.setAttribute('aria-hidden', 'true');
-      }
-    };
     pngBtn.addEventListener('click', closeSidebar, true);
     pdfBtn.addEventListener('click', closeSidebar, true);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
@@ -999,6 +1303,8 @@
 </script>
 </body>
 </html>
+
+
 
 
 
