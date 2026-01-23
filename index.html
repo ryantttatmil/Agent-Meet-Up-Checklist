@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -465,6 +466,24 @@
   }
 
 
+  /* Calculator button (only appears on retirement-risk card) */
+  .calc-btn{
+    border: 1px solid #cfd6e7;
+    background: #fff;
+    color: #1a2a3a;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .calc-btn:hover{
+    border-color: #c6d2f7;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  }
+
+
   /* === Tablet "awkward ratio" fix: move text under icon (ONLY this range) ===
      Targets widths like ~500–820 and shorter height (split view / small tablet landscape).
      Does NOT affect mobile portrait (<=480) or desktop (>=1025). */
@@ -509,7 +528,21 @@
     }
   }
 
+.currency-mirror{
+      display: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a2a3a;
+      padding: 4px 8px;
+      border: 1px solid #cfd6e7;
+      border-radius: 6px;
+      background: #fff;
+      line-height: 1.4; /* ✅ no baseline clipping */
+    }
 
+    .exporting .currency-select{ display: none !important; }
+    .exporting .currency-mirror{ display: inline-block !important; 
+}
 
   /* Mobile landscape FIX: use max-height so it actually applies */
   @media (max-height: 480px) and (orientation: landscape){
@@ -548,6 +581,18 @@
       height: 36px;
       border-radius: 8px;
     }
+
+    /* ✅ Export: prevent bottom clipping (html2canvas sometimes trims last pixels) */
+    .exporting #captureArea{
+      padding-bottom: 18px; /* safe space for money input baseline */
+    }
+
+    /* Optional: ensure no cropping by overflow during export */
+    .exporting .export-frame,
+    .exporting .card,
+    .exporting .grid{
+      overflow: visible !important;
+    }
   }
 </style>
 </head>
@@ -574,7 +619,7 @@
             <div class="field-pair">
               <label for="clientAge">年齡：</label>
               <span id="ageMirror" class="age-mirror placeholder">（—）</span>
-              <input id="clientAge" class="age-input" type="number" min="0" max="1200" inputmode="numeric" placeholder="例：35" />
+              <input id="clientAge" class="age-input" type="number" min="0" max="1000" inputmode="numeric" placeholder="例：35" />
             </div>
 
             <!-- Pair 3: Gender -->
@@ -659,10 +704,10 @@
               </div>
               <div class="money-box">
                 <div class="money-field">
-                  <select class="currency-select" aria-label="貨幣">
-                    <option value="HKD">HKD$</option>
-                    <option value="USD">USD$</option>
-                  </select>
+		  <select class="currency-select" aria-label="貨幣">
+  		    <option value="HKD">HKD$</option>
+  		    <option value="USD">USD$</option>
+		  </select>
                   <input type="text" class="money-input" placeholder="輸入金額" inputmode="decimal" autocomplete="off" />
                 </div>
               </div>
@@ -762,7 +807,18 @@
 
             <div class="money">
               <div class="money-header">
-                <button type="button" class="money-toggle">金額</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <button type="button" class="money-toggle">金額</button>
+                  <button
+                    type="button"
+                    class="calc-btn"
+                    aria-label="退休計算機"
+                    data-url="https://www.manulife.com.hk/zh-hk/individual/services/useful-calculators/retirement-calculator.html"
+                  >
+                    計算機
+                  </button>
+                </div>
+
                 <button type="button" class="deficit-toggle" aria-pressed="false">不足！</button>
               </div>
               <div class="money-box">
@@ -930,71 +986,118 @@
        Money + Currency + Deficit
        + ✅ Auto-save on change
        ============================ */
-    const MONEY_INPUTS = new Map(); // id -> { input, box, toggle, currencySelect, deficitBtn, card }
+    
+const MONEY_INPUTS = new Map(); // id -> record
 
-    function setupMoneyAndDeficit(){
-      [...form.querySelectorAll('.card')].forEach(card => {
-        const id = card.dataset.id;
-        const money = card.querySelector('.money');
-        if(!money) return;
+function setupMoneyAndDeficit() {
+  [...form.querySelectorAll('.card')].forEach(card => {
+    const id = card.dataset.id;
+    const money = card.querySelector('.money');
+    if (!money) return;
 
-        const box = money.querySelector('.money-box');
-        const toggleBtn = money.querySelector('.money-toggle');
-        const input = money.querySelector('.money-input');
-        const currencySelect = money.querySelector('.currency-select');
-        const deficitBtn = money.querySelector('.deficit-toggle');
+    const box = money.querySelector('.money-box');
+    const toggleBtn = money.querySelector('.money-toggle');
+    const input = money.querySelector('.money-input');
+    const currencySelect = money.querySelector('.currency-select');
+    const deficitBtn = money.querySelector('.deficit-toggle');
 
-        if(!box || !toggleBtn || !input || !currencySelect || !deficitBtn) return;
 
-        const stopOnly = (e) => { e.stopPropagation(); };
-
-        // ✅ Prevent label default from toggling checkbox
-        toggleBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          box.classList.toggle('open');
-        });
-
-        input.addEventListener('click', stopOnly);
-        currencySelect.addEventListener('click', stopOnly);
-
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
-          e.stopPropagation();
-        });
-
-        input.addEventListener('input', () => {
-          const v = input.value.replace(/[^\d.]/g, '');
-          const parts = v.split('.');
-          input.value = parts.length > 2 ? (parts[0] + '.' + parts.slice(1).join('')) : v;
-          persistAmounts(); // ✅ auto-save
-        });
-
-        currencySelect.addEventListener('change', (e) => {
-          e.stopPropagation();
-          persistCurrencies(); // ✅ auto-save
-        });
-
-        deficitBtn.addEventListener('click', (e) => {
-          e.preventDefault(); // ✅ prevent label toggling checkbox
-          e.stopPropagation();
-          const next = deficitBtn.getAttribute('aria-pressed') !== 'true';
-          deficitBtn.setAttribute('aria-pressed', String(next));
-          card.classList.toggle('deficit', next);
-          persistDeficits(); // ✅ auto-save
-        });
-
-        MONEY_INPUTS.set(id, { input, box, toggle: toggleBtn, currencySelect, deficitBtn, card });
+    // ✅ Retirement card only: calculator redirect button
+    const calcBtn = money.querySelector('.calc-btn');
+    if (calcBtn) {
+      calcBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = calcBtn.dataset.url;
+        if (url) window.open(url, '_blank', 'noopener,noreferrer'); // open new tab
       });
     }
-    setupMoneyAndDeficit();
+
+
+    if (!box || !toggleBtn || !input || !currencySelect || !deficitBtn) return;
+
+    // Create currency mirror (export-only)
+    let currencyMirror = money.querySelector('.currency-mirror');
+    if (!currencyMirror) {
+      currencyMirror = document.createElement('span');
+      currencyMirror.className = 'currency-mirror';
+      currencySelect.insertAdjacentElement('beforebegin', currencyMirror);
+    }
+
+    function syncCurrencyMirror() {
+      const v = currencySelect.value || 'HKD';
+      currencyMirror.textContent = (v === 'USD') ? 'USD$' : 'HKD$';
+    }
+    syncCurrencyMirror();
+
+    const stopOnly = (e) => e.stopPropagation();
+
+    // Money toggle (open/close)
+    toggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      box.classList.toggle('open');
+    });
+
+    // Prevent label click from toggling checkbox when using money controls
+    input.addEventListener('click', stopOnly);
+    currencySelect.addEventListener('click', stopOnly);
+    deficitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const next = deficitBtn.getAttribute('aria-pressed') !== 'true';
+      deficitBtn.setAttribute('aria-pressed', String(next));
+      card.classList.toggle('deficit', next);
+
+      persistDeficits();
+    });
+
+    // Amount input sanitize + auto-save
+    input.addEventListener('input', () => {
+      const v = input.value.replace(/[^\d.]/g, '');
+      const parts = v.split('.');
+      input.value = (parts.length > 2)
+        ? (parts[0] + '.' + parts.slice(1).join(''))
+        : v;
+
+      persistAmounts();
+    });
+
+    // Currency change + auto-save
+    currencySelect.addEventListener('change', (e) => {
+      e.stopPropagation();
+      syncCurrencyMirror();
+      persistCurrencies();
+    });
+
+    MONEY_INPUTS.set(id, {
+      input,
+      box,
+      currencySelect,
+      currencyMirror,
+      syncCurrencyMirror,
+      deficitBtn,
+      card
+    });
+  });
+}
+
+// ✅ IMPORTANT: call it AFTER the function is fully defined
+setupMoneyAndDeficit();
+
 
     function readAmounts(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=(r.input.value||'').trim()); return out; }
     function readCurrencies(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=r.currencySelect.value || 'HKD'); return out; }
     function readDeficits(){ const out = {}; MONEY_INPUTS.forEach((r, id)=> out[id]=r.card.classList.contains('deficit')); return out; }
 
     function applyAmounts(amounts = {}){ MONEY_INPUTS.forEach((r,id)=>{ const v=amounts[id]||''; r.input.value=v; r.box.classList.toggle('open', !!v); }); }
-    function applyCurrencies(currencies = {}){ MONEY_INPUTS.forEach((r,id)=>{ r.currencySelect.value = currencies[id] || 'HKD'; }); }
+    function applyCurrencies(currencies = {}){ 
+      MONEY_INPUTS.forEach((r, id) => {
+          r.currencySelect.value = currencies[id] || 'HKD';
+          r.syncCurrencyMirror?.(); // ✅ update mirror after programmatic set
+      });
+    }
     function applyDeficits(deficits = {}){ MONEY_INPUTS.forEach((r,id)=>{ const on=!!deficits[id]; r.card.classList.toggle('deficit', on); r.deficitBtn.setAttribute('aria-pressed', String(on)); }); }
 
     // ✅ NEW: persist functions
@@ -1028,12 +1131,18 @@
       localStorage.removeItem(KEY_GENDER);
       syncGenderMirror();
 
-      MONEY_INPUTS.forEach(({ input, box, currencySelect, deficitBtn }) => {
-        input.value = '';
-        box.classList.remove('open');
-        currencySelect.value = 'HKD';
-        deficitBtn.setAttribute('aria-pressed', 'false');
+      
+      MONEY_INPUTS.forEach((r) => {
+        r.input.value = '';
+        r.box.classList.remove('open');
+
+        r.currencySelect.value = 'HKD';
+        r.syncCurrencyMirror?.();   // ✅ correct
+
+        r.deficitBtn.setAttribute('aria-pressed', 'false');
+        r.card.classList.remove('deficit'); // ✅ also clear UI state
       });
+
 
       // ✅ remove auto-save keys
       localStorage.removeItem(KEY_AMOUNTS);
@@ -1045,7 +1154,15 @@
 
     // Capture with export-only UI swap
     async function captureWithExporting(fn){
+      // ✅ close sidebar before exporting, but only if closeSidebar exists
+      try { closeSidebar?.(); } catch(e) {}
+
       exportFrame.classList.add('exporting');
+
+
+      // ✅ force-sync mirrors right before capture
+      MONEY_INPUTS.forEach((r) => r.syncCurrencyMirror?.());
+
       clientName.blur();
       clientAge.blur();
       clientGender.blur?.();
@@ -1073,10 +1190,51 @@
 
     function safeFilename(base){ return base.replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim(); }
 
+
+    async function renderExportCanvas(){
+      // ✅ Measure exact height (avoid last-line cropping)
+      const target = document.getElementById('captureArea');
+      const rect = target.getBoundingClientRect();
+
+      // Add a small safety pad at bottom in pixels (scaled later)
+      const SAFE_PAD = 24;
+
+      return await html2canvas(target, {
+        backgroundColor: '#ffffff',
+        scale: SCALE,
+        useCORS: true,
+        logging: false,
+
+        // ✅ Force capture size (prevents cropping)
+        width: Math.ceil(rect.width),
+        height: Math.ceil(rect.height + SAFE_PAD),
+        windowWidth: Math.ceil(rect.width),
+        windowHeight: Math.ceil(rect.height + SAFE_PAD),
+
+        // ✅ Fix overflow clipping only in the cloned DOM
+        onclone: (doc) => {
+          const clonedCapture = doc.getElementById('captureArea');
+          if (clonedCapture) clonedCapture.style.paddingBottom = '18px';
+
+          // Make potential clipping containers visible
+          doc.querySelectorAll('.card, .grid, .export-frame').forEach(el => {
+            el.style.overflow = 'visible';
+          });
+
+          // Some browsers clip input text baseline; bump line-height slightly in clone
+          doc.querySelectorAll('.money-input').forEach(el => {
+            el.style.lineHeight = '1.4';
+            el.style.paddingBottom = '2px';
+          });
+        }
+      });
+    }
+
+
     // Export PNG
     pngBtn.addEventListener('click', () => {
       captureWithExporting(async () => {
-        const canvas = await html2canvas(exportFrame, { backgroundColor: '#ffffff', scale: SCALE, useCORS: true, logging: false });
+        const canvas =  await renderExportCanvas();
         canvas.toBlob((blob) => {
           if (!blob) return;
           const url = URL.createObjectURL(blob);
@@ -1091,7 +1249,7 @@
     // Export PDF
     pdfBtn.addEventListener('click', () => {
       captureWithExporting(async () => {
-        const canvas = await html2canvas(exportFrame, { backgroundColor: '#ffffff', scale: SCALE, useCORS: true, logging: false });
+        const canvas = await renderExportCanvas();
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
         const isLandscape = canvas.width > canvas.height;
@@ -1120,19 +1278,23 @@
       z-index:9;
     }
     body.sidebar-open .client-sidebar{ transform:translateX(0); }
+    
     .sidebar-overlay{
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.25);
       opacity: 0;
+      visibility: hidden;      /* ✅ new */
       pointer-events: none;
-      transition: opacity .2s ease;
-      z-index:8;
+      transition: opacity .2s ease, visibility .2s ease;
+      z-index: 8;
     }
     body.sidebar-open .sidebar-overlay{
       opacity: 1;
+      visibility: visible;     /* ✅ new */
       pointer-events: auto;
-    }
+    } 
+
     @media (max-width:480px){
       .sidebar-overlay{ background: rgba(0,0,0,.35); }
     }
@@ -1391,6 +1553,9 @@
 </script>
 </body>
 </html>
+
+
+
 
 
 
