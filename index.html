@@ -1549,10 +1549,17 @@ setupMoneyAndDeficit();
     pngBtn.addEventListener('click', closeSidebar, true);
     pdfBtn.addEventListener('click', closeSidebar, true);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+	//Password Protection
+    const pw = prompt("請輸入密碼：");
+    if (pw !== "Manulife") {
+      document.body.innerHTML = "未授權訪問";
+    }
   });
 </script>
 </body>
 </html>
+
 
 
 
