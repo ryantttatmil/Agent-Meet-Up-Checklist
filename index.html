@@ -1056,7 +1056,7 @@
     syncAgeMirror();
     clientAge.addEventListener('input', () => {
       const raw = String(clientAge.value || '').replace(/[^\d]/g, '');
-      let num = raw === '' ? '' : Math.max(0, Math.min(500, parseInt(raw, 10)));
+      let num = raw === '' ? '' : Math.max(0, Math.min(250, parseInt(raw, 10)));
       clientAge.value = (num === '' ? '' : String(num));
       localStorage.setItem(KEY_AGE, clientAge.value);
       syncAgeMirror();
@@ -1686,6 +1686,7 @@ setupMoneyAndDeficit();
 </script>
 </body>
 </html>
+
 
 
 
